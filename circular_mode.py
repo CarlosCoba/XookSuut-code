@@ -55,6 +55,7 @@ def circ_mod(galaxy, vel, evel, guess0, vary, n_it, rstart, rfinal, ring_space, 
 
 			if np.nanmean(vrot) < 0 :
 				pa0 = pa0 - 180
+				vrot = abs(vrot)
 				if pa0 < 0 : pa0 = pa0 + 360
 
 
