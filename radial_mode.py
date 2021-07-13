@@ -57,6 +57,7 @@ def rad_mod(galaxy, vel, evel, guess0, vary, n_it, rstart, rfinal, ring_space, f
 			if np.nanmean(vrot) < 0 :
 				pa0 = pa0 - 180
 				if pa0 < 0 : pa0 = pa0 + 360
+				vrot = abs(np.asarray(vrot))
 
 			if xi_sq < chisq_global:
 
