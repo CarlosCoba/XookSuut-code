@@ -50,7 +50,7 @@ def bisym_mod(galaxy, vel, evel, guess0, vary, n_it, rstart, rfinal, ring_space,
 
 			if np.mean(vrad_tab_it) < 0 or np.mean(vtan_tab_it) <0 :
 				theta_b0 = theta_b - 90
-				if theta_b0 < 0: theta_b0 = 360 + theta_b0
+				if theta_b0 < 0: theta_b0 = 180 + theta_b0
 
 
 			if it == 100:
@@ -69,6 +69,7 @@ def bisym_mod(galaxy, vel, evel, guess0, vary, n_it, rstart, rfinal, ring_space,
 			if np.nanmean(vrot) < 0 :
 				pa0 = pa0 - 180
 				if pa0 < 0 : pa0 = pa0 + 360
+				vrot = abs(np.asarray(vrot))
 
 
 			theta_b0 = theta_b
