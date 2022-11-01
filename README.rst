@@ -1,8 +1,7 @@
-@c
 
 
 *******************************************
-XookSuut version 2.0.0
+XookSuut (XS)
 *******************************************
 
 |logo|
@@ -19,7 +18,7 @@ XookSuut version 2.0.0
 
 Description
 ===========
-XookSuut or XS, is a python tool developed to model non-circular motions on 2D velocity maps,
+XookSuut or XS for short, is a python tool developed to model non-circular motions on 2D velocity maps,
 such as those obtained from Integral Field Spectroscopy data, i.e., stellar and ionized-gas velocity maps. However XS can run
 in any velocity map whose representation is in 2D. 
 XS is able to model circular rotation models, axissymietric radial flows, bisymmetric flows, and a general harmonic decomposition of the LOSV.
@@ -84,16 +83,16 @@ Radial flow model:
 Bisymmetric model:
 |bis|
 
-Corner plot of constant parameters
+Corner plot of constant parameters (i.e, PA, INC, XC, YC, PA_BAR)
 |corner|
 
-V2r chain
+V2r chain. 
 |chain_rad|
 
 V2t chain
 |chain_tan|
 
-Harmonic expasion with m = 2
+Harmonic expasion with harmonic number m  = 2
 |hrm|
 
 
@@ -102,7 +101,7 @@ Referencing XookSuut
 =================
 
 If you are using XS in your work, please cite the XS release paper (), and dont forget citing DiskFit (Spekkens & Sellwood 2007) and RESWRI (Schoenmakers et al. 1997)
-where the models are inspired.
+where some of the kinematic models from XS are adopted.
 Also, if you use the XS colormap in a different context, I would appreciate it, if you include XS in the acknowledgment section.
 
 
@@ -127,7 +126,7 @@ Also, if you use the XS colormap in a different context, I would appreciate it, 
     :target: https://github.com/CarlosCoba/XookSuut-code
 
 .. |corner| image:: corner.bisymmetric_model.example.png
-    :scale: 20 %
+    :scale: 10 %
     :target: https://github.com/CarlosCoba/XookSuut-code
 
 .. |chain_rad| image:: chain_progress.rad.bisymmetric_model.example.png
