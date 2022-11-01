@@ -1,4 +1,4 @@
-
+@c
 
 
 *******************************************
@@ -70,7 +70,7 @@ this could be very usefull in case you want to analyse several objects at the sa
 Please read the run_example.txt file to see how to run XS.
 
 
-Use
+Examples
 ===========
 Following are some of the outputs you can obtain from running XS on a velocity map. These examples correpond to a simulated velocity map with an oval distortion.
 
@@ -101,9 +101,9 @@ Harmonic expasion with m = 2
 Referencing XookSuut
 =================
 
-If you are using XS in your work, please cite the XS release paper (), and dont forget citing DiskFit (Spekkens & Sellwood + 2017) and RESWRI ()
+If you are using XS in your work, please cite the XS release paper (), and dont forget citing DiskFit (Spekkens & Sellwood 2007) and RESWRI (Schoenmakers et al. 1997)
 where the models are inspired.
-If you use the XS colormap I would appreciate it, if you put it in the acknowledgment section.
+Also, if you use the XS colormap in a different context, I would appreciate it, if you include XS in the acknowledgment section.
 
 
 
