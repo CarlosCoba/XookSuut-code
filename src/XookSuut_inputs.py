@@ -5,6 +5,10 @@ nargs=len(sys.argv)
 import configparser
 from src.initialize_XS_main import XS_out
 
+import os
+this_dir, this_filename = os.path.split(__file__)
+CONFIG_PATH = os.path.join(this_dir,"config_file", "xs_conf.ini")
+
 
 
 
@@ -71,7 +75,7 @@ class input_params:
 		except(IndexError): pass
 
 		if config_file in osi:
-			config_file = "../src/xs_conf.ini"
+			config_file = CONFIG_PATH
 			print("XookSuut: No config file has been passed. Using default configuration file ..")
 
 
