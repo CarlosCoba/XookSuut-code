@@ -17,7 +17,7 @@ with open("requirements.txt", "r") as r:
 
 all_packages = find_packages()
 setup(
-    name="XookSuut-git",
+    name="XookSuut",
     version="2.0.0",
     description="A Python tool for modeling non-ciruclar motions on 2D velocity maps",
     long_description=readme(),
@@ -25,6 +25,7 @@ setup(
     url="https://github.com/CarlosCoba/XookSuut-code.git",
     author="C. Lopez-Coba",
     author_email="calopez@asiaa.sinica.edu.tw",
+	include_package_data=True,
     license="MIT",
     packages=all_packages,
     install_requires=requirements,
