@@ -18,7 +18,7 @@ with open("requirements.txt", "r") as r:
 all_packages = find_packages()
 setup(
     name="XookSuut",
-    version="2.0.0",
+    version="3.0.0",
     description="A Python tool for modeling non-ciruclar motions on 2D velocity maps",
     long_description=readme(),
     keywords="kinematics",
