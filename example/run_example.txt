@@ -63,7 +63,7 @@ XookSuut example velmap_example.fits.gz - 0.5 50 60 61 61 - 1 1 1 1 1 1.5 - 1.5,
 
 
 If you want to acces to the superior configuration of XookSuut you will have to pass a configuration file in the command line.
-By default XS ALWAYS uses the config file stored in ./src/xs_config.ini, where all variables are deactivated by default. 
+By default XS ALWAYS uses the config file stored in /XookSuut/src/config_file/xs_config.ini, where all variables are deactivated by default. 
 It is recomended that you copy the xs_config.ini file in your working directory and edit it according to your own preference.
 
 In the configuration file you can access to the MCMC analysis, bootstrap errors, and general parameters.
