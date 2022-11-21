@@ -1,0 +1,96 @@
+Example of running XookSuut on a simulated velocity map with an oval distortion.
+
+#Goal:
+Recover the different kinemaitc components from each kinematic model
+
+#Data:
+This example simulate a velocity map recovered from a second moment map such as those obtained from IFS-data, FP, HI etc.
+The pixel size of the image is 0.5 arcsec*pixel**-1
+No error map is passed 
+
+ 
+
+#Setup,
+In this example we will estimate the rotation curves in raddi equali spaced.
+The starting ring will be placed at 2 arcsec and subsequent rings will be placed each 1.5 arcsec.
+The maximum radius will be placed up to 100 arcsec (on the disk plane).
+- Velocities will be computed in each ring only if the ring contains at least 1/3 of the total pixels.
+- Noncircular motions describing the bar distortion will be computed up to 20arcsec
+- It will be used the Levenberg–Marquardt (LM) for the least-square analysis
+	- 5 Itereations will be used for evaluating the chisquare.
+		!NOTE At least 1 iteration is required to stibilize the disk-geometry.!
+
+- PA = 50, INC = 60, XC = 61, YC = 61 are the initial guess values for the disk geometry.
+	All parameters are allowed to vary during the fitting (i.e, VARY_PARAM = 1)
+- The systemic velocity guess is estimated around the kinematic centre (XC,YC)
+
+
+
+# For running a circular model:
+
+In a terminal type the following
+XookSuut example velmap_example.fits.gz - 0.5 50 60 61 61 - 1 1 1 1 1 1.5 - 1.5,100 1/3. circular LM 5
+
+
+
+# For running a radial model:
+
+In a terminal type the following
+XookSuut example velmap_example.fits.gz - 0.5 50 60 61 61 - 1 1 1 1 1 1.5 - 1.5,100 1/3. radial LM 5 20
+
+
+
+
+# For running a bisymmetric model:
+
+In a terminal type the following
+XookSuut example velmap_example.fits.gz - 0.5 50 60 61 61 - 1 1 1 1 1 1.5 - 1.5,100 1/3. bisymmetric LM 5 20
+
+
+
+
+# For running a harmonic decomposition model up to m=2:
+
+In a terminal type the following
+XookSuut example velmap_example.fits.gz - 0.5 50 60 61 61 - 1 1 1 1 1 1.5 - 1.5,100 1/3. hrm_2 LM 5 20 
+
+
+
+
+##
+# XS configuration file
+##
+
+
+If you want to acces to the superior configuration of XookSuut you will have to pass a configuration file in the command line.
+By default XS ALWAYS uses the config file stored in ./src/xs_config.ini, where all variables are deactivated by default. 
+It is recomended that you copy the xs_config.ini file in your working directory and edit it according to your own preference.
+
+In the configuration file you can access to the MCMC analysis, bootstrap errors, and general parameters.
+
+#####
+# XookSuut adopting MCMC methods
+#####
+
+In order to acces to the MCMC analysis, you will have to edit the configuration file. In this example we have copied the ./src/xs_config.ini file
+to this directory and renamed as xs_conf.example.ini.
+To perform the MCMC analysis we set mcmc_ana = True, and perform 50 steps. After saving the configuration file we pass it to XS in the command line as
+follows:
+
+# For running a circular model using MCMC:
+In a terminal type the following
+XookSuut example velmap_example.fits.gz - 0.5 50 60 61 61 - 1 1 1 1 1 1.5 - 1.5,100 1/3. circular LM 5 - xs_conf.example.ini
+# For running a bisymmetric model using MCMC:
+In a terminal type the following
+XookSuut example velmap_example.fits.gz - 0.5 50 60 61 61 - 1 1 1 1 1 1.5 - 1.5,100 1/3. bisymmetric LM 5 20 xs_conf.example.ini
+
+
+
+#####
+# XookSuut estimation of errors with bootstrap
+#####
+For this purpose you will have to change the value of "boots_ana" to True in the configuration file. In addition
+the user will have to specify the number of bootstrap iterations with the variable "Nboots".
+
+
+
