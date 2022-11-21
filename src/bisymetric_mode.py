@@ -121,7 +121,7 @@ class Bisymmetric_model:
 				self.pa0 = self.pa0 - 180
 				vrot = abs(np.asarray(vrot))
 				if self.pa0 < 0 : self.pa0 = self.pa0 + 360
-			print(self.pa0, self.inc0, xi_sq,xi_sq < self.chisq_global)
+
 			# Keep the best fit 
 			if xi_sq < self.chisq_global:
 
@@ -146,7 +146,7 @@ class Bisymmetric_model:
 
 	import time
 	def boots(self,individual_run=0):
-		print("starting bootstrap analysis ..");print(self.PA, self.INC,11111);quit()
+		print("starting bootstrap analysis ..")
 
 		self.frac_pixel = 0
 		self.n_it = 1
