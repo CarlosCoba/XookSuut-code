@@ -84,7 +84,6 @@ class KinModel :
 				# Adding zeros to C, S
 				self.C_k, self.S_k = cs_k_add_zeros(C_flat,S_flat,self.m_hrm,self.n_circ,self.n_noncirc)
 
-
 			self.PA, self.INC, self.XC, self.YC = (self.theta0)[self.m],(self.theta0)[self.m+1],(self.theta0)[self.m+2],(self.theta0)[self.m+3]
 			#self.PA, self.INC, self.XC, self.YC = self.pa, self.inc, self.x0, self.y0
 			self.r_n = Rings(self.XY_mesh,self.PA*np.pi/180,self.INC*np.pi/180,self.XC,self.YC,self.pixel_scale)
@@ -155,7 +154,6 @@ class KinModel :
 			self.expand_theta(theta)
 			"""
 			Analysis of r > r0
-
 			"""
 			self.interp_model_r = dataset_to_2D([self.ny,self.nx], self.n_annulus, self.rings_pos, self.r_n, self.XY_mesh, self.kinmdl_dataset, self.vmode, self.v_center, None, self.index_v0)
 
@@ -166,7 +164,6 @@ class KinModel :
 
 			"""
 			Analysis of r < r0
-
 			"""
 			#(a) velocity rises linearly from zero: r1 = 0, v1 = 0
 			if self.v_center == 0 or (self.v_center != "extrapolate" and self.vmode != "circular"):
@@ -207,9 +204,4 @@ class KinModel :
 			mdl = self.interp_model_r[mask_finite]
 			obs = self.vel_map[mask_finite]
 			err = self.evel_map[mask_finite]
-
-
 			return mdl, obs, err
-
-
-

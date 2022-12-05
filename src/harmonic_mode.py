@@ -6,6 +6,7 @@ from src.resample import resampling
 from src.prepare_mcmc import Metropolis as MP
 from src.chain_hrm import chain_res_mcmc
 from src.tools_fits import array_2_fits
+import os
 
 class Harmonic_model:
 	def __init__(self, galaxy, vel, evel, guess0, vary, n_it, rstart, rfinal, ring_space, frac_pixel, inner_interp, delta, pixel_scale,  bar_min_max, config, e_ISM, fitmethod, m_hrm, outdir):
@@ -150,12 +151,12 @@ class Harmonic_model:
 	
 		if self.parallel: runs = [individual_run]
 		for k in runs:
-			seed0 = int(time.time());#print("seed0",seed0)
-
 			# setting chisq to -inf will preserve the leastsquare results
 			self.chisq_global = -np.inf
 			if (k+1) % 5 == 0 : print("%s/%s bootstraps" %((k+1),n_boot))
-			mdl_old = self.v_2D_mdl
+
+			seed0 = int(os.getpid()*time.time() / 123456789) if self.parallel else int(time.time())
+			mdl_old = self.best_vlos_2D_model
 			res = self.vel_copy - mdl_old
 			# Inject a different seed per process !
 			new_vel = resampling(mdl_old,res,self.Rings,self.delta,self.PA,self.INC,self.XC,self.YC,self.pixel_scale,seed=seed0)
@@ -215,9 +216,8 @@ class Harmonic_model:
 		sigmas = np.divide( theta0,theta0)*1e-1	
 
 		# For the intrinsic scatter
-		sigma_0 = 0.5
-		theta0 = np.append(theta0, sigma_0)
-		sigmas = np.append(sigmas, 0.1)
+		theta0 = np.append(theta0, 1)
+		sigmas = np.append(sigmas, 0.001)
 								
 				
 		data = [self.galaxy, self.vel, self.evel, theta0]
@@ -226,9 +226,9 @@ class Harmonic_model:
 
 		from src.create_2D_vlos_model_mcmc import KinModel
 		#MCMC RESULTS
-		chain, acc_frac, steps, thin, burnin, nwalkers, post_dist, ndim = MP(KinModel, data, model_params, mcmc_config, self.config_psf, self.inner_interp, self.n_circ, self.n_noncirc, self.m_hrm )
-		mcmc_params = [steps,thin,burnin,nwalkers,post_dist,self.plot_chain]
-		v_2D_mdl_, kin_2D_models_, Vk_,  PA_, INC_ , XC_, YC_, Vsys_, THETA_, self.std_errors = chain_res_mcmc(self.galaxy, self.vmode, theta0, chain, mcmc_params, acc_frac, self.shape, self.Rings, self.ring_space, self.pixel_scale, self.inner_interp,outdir = self.outdir, m_hrm=self.m_hrm, n_circ=self.n_circ, n_noncirc=self.n_noncirc, config_psf = self.config_psf )
+		mcmc_outs = MP(KinModel, data, model_params, mcmc_config, self.config_psf, self.inner_interp, self.n_circ, self.n_noncirc, self.m_hrm )
+		chain = mcmc_outs[0]
+		v_2D_mdl_, kin_2D_models_, Vk_,  PA_, INC_ , XC_, YC_, Vsys_, THETA_, self.std_errors = chain_res_mcmc(self.galaxy, self.vmode, theta0, mcmc_outs, self.shape, self.Rings, self.ring_space, self.pixel_scale, self.inner_interp,outdir = self.outdir, m_hrm=self.m_hrm, n_circ=self.n_circ, n_noncirc=self.n_noncirc, config_psf = self.config_psf, plot_chain = self.plot_chain )
 
 
 		#

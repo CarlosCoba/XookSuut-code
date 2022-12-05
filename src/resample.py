@@ -1,11 +1,6 @@
 import numpy as np
 from src.pixel_params import Rings
 import random
-np.random.seed(12345)
-
-
-
-
 
 
 def Rings_r_4(R,vel,ring,delta=0):
@@ -47,6 +42,7 @@ def resampling(velmap,error,rings,delta,pa,inc,xc,yc,pixel_scale,seed=10):
 	r_n = Rings(XY_mesh,pa,inc,xc,yc,pixel_scale)
 	velmap_c = np.copy(velmap)
 
+	pnrg = np.random.RandomState(seed)
 	k = 0
 	for ring in rings:
 		masks_pix = ring_pixels(r_n,ring,delta)
@@ -60,7 +56,6 @@ def resampling(velmap,error,rings,delta,pa,inc,xc,yc,pixel_scale,seed=10):
 		n_errors = len(error_pix)
 		not_nan_errors = error_pix[np.isfinite(error_pix)]
 		n_data = len(not_nan_errors)
-		pnrg = np.random.RandomState(seed)
 		try:
 			random_errors = pnrg.choice(not_nan_errors, size = n_errors, replace = True)
 		except(ValueError):

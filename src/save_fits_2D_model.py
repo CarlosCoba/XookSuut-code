@@ -13,6 +13,11 @@ def save_vlos_model(galaxy,vmode,vel_map,evel_map,vlos_2D_model, kin_2D_models,P
 		Vcirc_2D, Vrad_2D, Vtan_2D, R_n =  kin_2D_models
 
 	vel_map[vel_map == 0] = np.nan
+
+	Ndata = len( vlos_2D_model[np.isfinite(vlos_2D_model)] )
+	rms2 = np.nansum( (vel_map - vlos_2D_model)**2 ) / Ndata
+	rms = np.sqrt(rms2)
+
 	if True:
 
 		if "hrm" not in vmode:
@@ -37,6 +42,7 @@ def save_vlos_model(galaxy,vmode,vel_map,evel_map,vlos_2D_model, kin_2D_models,P
 		hdu.header['%s'%VSYS_str] = VSYS
 		hdu.header['XC'] = XC
 		hdu.header['YC'] = YC
+		hdu.header['rms'] = rms
 		if vmode == "bisymmetric":
 			hdu.header['PHI_BAR'] = theta
 
@@ -58,7 +64,7 @@ def save_vlos_model(galaxy,vmode,vel_map,evel_map,vlos_2D_model, kin_2D_models,P
 		hdu.header['%s'%VSYS_str] = VSYS
 		hdu.header['XC'] = XC
 		hdu.header['YC'] = YC
-		
+		hdu.header['rms'] = rms		
 		hdu.writeto("%smodels/%s.%s.residual.fits.gz"%(out,galaxy,vmode),overwrite=True)
 
 
@@ -81,7 +87,7 @@ def save_vlos_model(galaxy,vmode,vel_map,evel_map,vlos_2D_model, kin_2D_models,P
 		hdu.header['%s'%VSYS_str] = VSYS
 		hdu.header['XC'] = XC
 		hdu.header['YC'] = YC
-		
+		hdu.header['rms'] = rms		
 		hdu.writeto("%smodels/%s.%s.chisq.fits.gz"%(out,galaxy,vmode),overwrite=True)
 
 

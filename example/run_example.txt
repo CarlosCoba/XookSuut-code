@@ -4,7 +4,7 @@ Example of running XookSuut on a simulated velocity map with an oval distortion.
 Recover the different kinemaitc components from each kinematic model
 
 #Data:
-This example simulate a velocity map recovered from a second moment map such as those obtained from IFS-data, FP, HI etc.
+This example simulates a velocity map recovered from a second moment map such as those obtained from IFS-data, FP, HI etc.
 The pixel size of the image is 0.5 arcsec*pixel**-1
 No error map is passed 
 
@@ -14,11 +14,11 @@ No error map is passed
 In this example we will estimate the rotation curves in raddi equali spaced.
 The starting ring will be placed at 2 arcsec and subsequent rings will be placed each 1.5 arcsec.
 The maximum radius will be placed up to 100 arcsec (on the disk plane).
-- Velocities will be computed in each ring only if the ring contains at least 1/3 of the total pixels.
+- Velocities will be computed in each ring only if rings contain at least 1/3 of the total pixels.
 - Noncircular motions describing the bar distortion will be computed up to 20arcsec
 - It will be used the Levenberg–Marquardt (LM) for the least-square analysis
 	- 5 Itereations will be used for evaluating the chisquare.
-		!NOTE At least 1 iteration is required to stibilize the disk-geometry.!
+		!NOTE At least 2 iteration is required to stibilize the disk-geometry.!
 
 - PA = 50, INC = 60, XC = 61, YC = 61 are the initial guess values for the disk geometry.
 	All parameters are allowed to vary during the fitting (i.e, VARY_PARAM = 1)
@@ -74,8 +74,8 @@ In the configuration file you can access to the MCMC analysis, bootstrap errors,
 
 In order to acces to the MCMC analysis, you will have to edit the configuration file. In this example we have copied the ./src/xs_config.ini file
 to this directory and renamed as xs_conf.example.ini.
-To perform the MCMC analysis we set mcmc_ana = True, and perform 50 steps. After saving the configuration file we pass it to XS in the command line as
-follows:
+To perform the MCMC analysis we set mcmc_ana = True, and perform 100 steps. In real data you may want to run a couple of thousands.
+After saving the configuration file we pass it to XS in command line as follows:
 
 # For running a circular model using MCMC:
 In a terminal type the following

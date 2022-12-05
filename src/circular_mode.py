@@ -6,8 +6,8 @@ from src.resample import resampling
 from src.prepare_mcmc import Metropolis as MP
 from src.chain_circ import chain_res_mcmc
 from src.tools_fits import array_2_fits
-prng =  np.random.RandomState(12345)
-
+import os
+import matplotlib.pylab as plt
 
 #first_guess_it = []
 
@@ -106,7 +106,6 @@ class Circular_model:
 			vrot_tab[abs(vrot_tab) > 400] = np.nanmedian(vrot_tab) 
 			guess = [vrot_tab,vrot_tab*0,vrot_tab*0,self.pa0,self.inc0,self.x0,self.y0,self.vsys0,self.theta_b]
 			if it == 0: first_guess_it = guess
-
 			# Minimization
 			fitting = fit(self.vel, self.evel, guess, self.vary, self.vmode, self.config, R_pos, self.ring_space, self.fitmethod, self.e_ISM, self.pixel_scale, self.frac_pixel, self.inner_interp,N_it=self.n_it0)
 			self.v_2D_mdl, kin_2D_modls, Vk , self.pa0, self.inc0, self.x0, self.y0, self.vsys0, self.theta_b, out_data, Errors, true_rings = fitting.results()
@@ -119,7 +118,6 @@ class Circular_model:
 				self.pa0 = self.pa0 - 180
 				vrot = abs(np.asarray(vrot))
 				if self.pa0 < 0 : self.pa0 = self.pa0 + 360
-
 			# Keep the best fit 
 			if xi_sq < self.chisq_global:
 
@@ -149,15 +147,16 @@ class Circular_model:
 		n_boot = self.n_boot
 		self.n_it = 1
 		runs = np.arange(0,self.n_boot)
-	
+			
 		if self.parallel: runs = [individual_run]
 		for k in runs:
-			seed0 = int(time.time());#print("seed0",seed0)
+			seed0 = int(os.getpid()*time.time() / 123456789) if self.parallel else int(time.time())
+			self.pa0,self.inc0,self.x0,self.y0,self.vsys0,self.theta_b = self.GUESS[-6:]
 			# setting chisq to -inf will preserve the leastsquare results
 			self.chisq_global = -np.inf
 			if (k+1) % 5 == 0 : print("%s/%s bootstraps" %((k+1),n_boot))
 
-			mdl_old = self.v_2D_mdl
+			mdl_old = self.best_vlos_2D_model
 			res = self.vel_copy - mdl_old
 			# Inject a different seed per process !
 			new_vel = resampling(mdl_old,res,self.Rings,self.delta,self.PA,self.INC,self.XC,self.YC,self.pixel_scale,seed=seed0)
@@ -184,7 +183,7 @@ class Circular_model:
 			self.bootstrap_kin[k,:] = result[k][1]
 			self.bootstrap_contstant_prms[k,:] = result[k][0]
 		std_kin = np.nanstd(self.bootstrap_kin,axis=0)
-		self.eVrot = std_kin[:self.n_circ]		
+		self.eVrot = std_kin[:self.n_circ]	
 		self.std_errors = [[self.eVrot, 0,0],np.nanstd(self.bootstrap_contstant_prms,axis=0)]
 
 
@@ -195,12 +194,11 @@ class Circular_model:
 		theta0 = np.asarray([self.Vrot, self.PA, self.INC, self.XC, self.YC, self.VSYS])
 		n_circ, n_noncirc = len(self.Vrot),0
 		#Covariance of the proposal distribution		
-		sigmas = np.array([np.ones(n_circ),1,1,1,1,1])
+		sigmas = np.array([np.ones(n_circ)*1,1,1,1,1,1])*1e-1
 
 		# For the intrinsic scatter
-		sigma_0 = 0.5
-		theta0 = np.append(theta0, sigma_0)
-		sigmas = np.append(sigmas, 0.1)
+		theta0 = np.append(theta0, 1)
+		sigmas = np.append(sigmas, 0.001)
 
 		r_bar_min, r_bar_max = 0, 0
 		data = [self.galaxy, self.vel, self.evel, theta0]
@@ -209,9 +207,9 @@ class Circular_model:
 
 		from src.create_2D_vlos_model_mcmc import KinModel
 		#MCMC RESULTS
-		chain, acc_frac, steps, thin, burnin, nwalkers, post_dist, ndim = MP(KinModel, data, model_params, mcmc_config, self.config_psf, self.inner_interp, n_circ, n_noncirc )
-		mcmc_params = [steps,thin,burnin,nwalkers,post_dist,self.plot_chain]
-		v_2D_mdl_, kin_2D_models_, Vk_,  PA_, INC_ , XC_, YC_, Vsys_, THETA_, self.std_errors = chain_res_mcmc(self.galaxy, self.vmode, theta0, chain, mcmc_params, acc_frac, self.shape, self.Rings, self.ring_space, self.pixel_scale, self.inner_interp,outdir = self.outdir, config_psf = self.config_psf)
+		mcmc_outs = MP(KinModel, data, model_params, mcmc_config, self.config_psf, self.inner_interp, n_circ, n_noncirc )
+		chain = mcmc_outs[0]
+		v_2D_mdl_, kin_2D_models_, Vk_,  PA_, INC_ , XC_, YC_, Vsys_, THETA_, self.std_errors = chain_res_mcmc(self.galaxy, self.vmode, theta0, mcmc_outs,self.shape, self.Rings, self.ring_space, self.pixel_scale, self.inner_interp,outdir = self.outdir, config_psf = self.config_psf, plot_chain = self.plot_chain)
 		#Unpack velocities 
 		Vrot_, Vrad_, Vtan_ = Vk_
 

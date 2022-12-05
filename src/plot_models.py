@@ -128,7 +128,7 @@ def plot_kin_models(galaxy,vmode,vel_ha,R,Vrot,eVrot,Vrad,eVrad,Vtan,eVtan,VSYS,
 
 
 	#bbox_to_anchor =(x0, y0, width, height)
-	ax3.legend(loc = "center", fontsize = 6.5, bbox_to_anchor = (0, 1, 1, 0.2), ncol = 3, frameon = False)
+	ax3.legend(loc = "center", fontsize = 10, bbox_to_anchor = (0, 1, 1, 0.2), ncol = 3, frameon = False)
 
 	vels = [0*Vrot, Vrot, Vrad, Vtan]
 	max_vel,min_vel = int(np.nanmax(vels)),int(np.nanmin(vels)) 

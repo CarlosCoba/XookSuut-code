@@ -26,7 +26,6 @@ from src.kin_components import RADIAL_MODEL
 from src.kin_components import BISYM_MODEL
 from src.kin_components import HARMONIC_MODEL
 from src.pixel_params import pixels, v_interp
-from src.read_config import config_file
 from src.weights_interp import weigths_w
 from src.create_2D_kin_models import bidi_models
 from src.create_2D_vlos_model import best_2d_model
@@ -43,6 +42,7 @@ class Least_square_fit:
 		self.N_it = N_it
 		if self.N_it == 0:
 			vary,self.vary_kin = vary*0,0
+			vary,self.vary_kin = vary,1
 		else:
 			self.vary_kin = 1
 		if "hrm" in vmode:
@@ -67,13 +67,19 @@ class Least_square_fit:
 		self.nrings = len(self.rings_pos)
 		self.n_annulus = self.nrings - 1
 		self.vel_map = vel_map
-		self.e_vel_map = np.sqrt(abs(vel_map-self.vsys0)) if np.nanmean(e_vel_map) == 1 else e_vel_map
+		#self.e_vel_map = np.sqrt(abs(vel_map-self.vsys0)) if np.nanmean(e_vel_map) == 1 else e_vel_map
+		self.e_vel_map = e_vel_map
 		self.vmode = vmode
 		self.ring_space = ring_space
 		self.fit_method = fit_method
 		self.config = config
 		self.constant_params = constant_params
 		self.osi = ["-", ".", ",", "#","%", "&", ""]
+
+		# args to pass to minimize function
+		self.kwargs = {}
+		if self.N_it == 0:
+			self.kwargs = {"ftol":1e8}
 
 		X = np.arange(0, self.nx, 1)
 		Y = np.arange(0, self.ny, 1)
@@ -114,7 +120,10 @@ class Least_square_fit:
 		self.VSYSmin,self.VSYSmax,self.vary_vsys = config_const.getfloat('MIN_VSYS', 0), config_const.getfloat('MAX_VSYS', np.inf),config_const.getboolean('FIT_VSYS', self.vary_vsys)
 		self.PAbarmin,self.PAbarmax,self.vary_theta = config_const.getfloat('MIN_PHI_BAR', -180), config_const.getfloat('MAX_PHI_BAR', 180),config_const.getboolean('FIT_PHI_BAR', self.vary_theta)
 
-
+		config_general = config['general']
+		outliers = config_general.getboolean('outliers', False)
+		if outliers: self.kwargs["loss"]="cauchy"
+		
 
 class Config_params(Least_square_fit):
 
@@ -303,7 +312,7 @@ class Fit_kin_mdls(Models):
 			self.assign_vels(pars)
 			self.assign_constpars(pars)
 			res = self.residual(pars)
-			out = minimize(self.residual, pars, method = self.fit_method, nan_policy = "omit")
+			out = minimize(self.residual, pars, method = self.fit_method, nan_policy = "omit", **self.kwargs)
 			return out
 
 		def results(self):

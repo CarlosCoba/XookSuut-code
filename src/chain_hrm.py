@@ -24,11 +24,9 @@ from src.create_2D_kin_models_mcmc import bidi_models
 #
 
 
-def chain_res_mcmc(galaxy, vmode, theta, chain, mcmc_config, accept_rate, shape, rings_pos, ring_space, pixel_scale, inner_interp, phi_b = 0, outdir = False, m_hrm=0, n_circ=0, n_noncirc=0, config_psf=None  ):
+def chain_res_mcmc(galaxy, vmode, theta, mcmc_outs, shape, rings_pos, ring_space, pixel_scale, inner_interp, phi_b = 0, outdir = False, m_hrm=0, n_circ=0, n_noncirc=0, config_psf=None , plot_chain = False  ):
 
-	chain_params = mcmc_config
-	steps,thin,burnin,nwalkers,PropDist,save_plots = chain_params
-
+	[chain, acc_frac, steps, thin, burnin, Nwalkers, PropDist, ndim, act] = mcmc_outs
 	[nwalkers, steps,ndim]=chain.shape
 	# These are the number of parameters from the kinematic models
 	n_params_mdl = n_circ + n_noncirc*(2*m_hrm-1) + 5
@@ -46,20 +44,18 @@ def chain_res_mcmc(galaxy, vmode, theta, chain, mcmc_config, accept_rate, shape,
 		if ndim == n_params_mdl+1:
 			pa0,inc0,x0,y0,vsys0,lnsigma2 = theta[-6:]
 			truths_const = [pa0, inc0, x0, y0, vsys0, lnsigma2]
-			labels_const.append("$\mathrm{\log~\sigma}$")
+			labels_const.append("$\mathrm{\ln~\sigma_{int}^2}$")
 	if PropDist == "C":
 		pa0,inc0,x0,y0,vsys0,lnsigma2 = theta[-6:]
 		truths_const = [pa0, inc0, x0, y0, vsys0, lnsigma2]
 		labels_const.append("$\mathrm{\gamma~(km/s)}$")
 
-
-
-
+	nlabels = len(labels_const)
 	m = ndim - len(truths_const)
 	time = np.arange(steps)
 	vel_labels = [] 
 
-	if save_plots :
+	if plot_chain :
 
 		# plot c1; 
 		fig, axes = fig_ambient(fig_size = (3.5,5), ncol = 1, nrow = n_circ, left = 0.2, right = 0.95, top = 0.99, hspace = 0, bottom = 0.1, wspace = 0.4 )
@@ -136,19 +132,19 @@ def chain_res_mcmc(galaxy, vmode, theta, chain, mcmc_config, accept_rate, shape,
 	good_samples = chain[::thin, :, :].reshape((-1, ndim))
 
 	# Marginilize parameters
-	chain_res = np.empty((ndim,4))
+	chain_res = np.empty((ndim,7))
 	for i in range(ndim):
 		#
-		# Show -+1 sigma
+		# Show -+2 sigma
 		#
-		mcmc = np.percentile(good_samples[:, i], [15.865, 50, 84.135])
-		q = np.diff(mcmc)
-		median, lower,upper, std = mcmc[1], q[0], q[1], np.std(good_samples[:, i])
-		chain_res[i,:] = [median,lower,upper,std]
+		mcmc = np.percentile(good_samples[:, i], [2.275, 15.865, 50, 84.135,97.225])
+		median = mcmc[2]
+		[sigma2l,sigma1l,sigma1u,sigma2u] = median-mcmc[0],median-mcmc[1],mcmc[3]-median,mcmc[4]-median 
 
-	medians, errors, std = chain_res[:,0],chain_res[:,1:3],chain_res[:,-1]
-	# +1 sigma
-	sigma_l,sigma_u = errors[:,0],errors[:,1]
+		std1= 0.5 * abs(sigma1u + sigma1l)
+		std2= 0.5 * abs(sigma2u + sigma2l)
+		chain_res[i,:] = [median,sigma1l,sigma1u,std1,sigma2l,sigma2u,std2]
+	medians, errors, std = chain_res[:,0],chain_res[:,1:3],chain_res[:,3]
 
 
 	if PropDist == "G":
@@ -174,16 +170,15 @@ def chain_res_mcmc(galaxy, vmode, theta, chain, mcmc_config, accept_rate, shape,
 		theta_mdls = medians[:-1]
 
 
+
 	# TO DO ....
-	#if save_plots :
-	#	from mcmc_out import save_mcmc_outs
-	#	save_mcmc_outs(galaxy,vmode2,chain_res,n_circ,n_noncirc,rings_pos,vel_labels)
+	from src.save_mcmc_outs import marginal_vals
+	marginal_vals(galaxy,vmode2,chain_res,n_circ,n_noncirc,outdir,nlabels,mcmc_outs[1:])
 
 	#
 	# Corner plot
 	#
 
-	nlabels = len(labels_const)
 	flat_samples = good_samples[:,m:]
 
 	CORNER_KWARGS = dict(

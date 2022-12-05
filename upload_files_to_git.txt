@@ -1,11 +1,8 @@
 
-
-
-
 git status
 git init
 git add .
-git commit -m "XookSuut_v1.0.0"
+git commit -m "XookSuut_v3.1.0"
 git remote add origin https://github.com/CarlosCoba/XookSuut-code.git
 git push -u origin master
 
