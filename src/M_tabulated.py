@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pylab as plt
-from src.pixel_params import Rings
+from src.pixel_params import Rings,eps_2_inc
  
 
 
-def weigths_w(xy_mesh,shape,pa,inc,x0,y0,ring,delta,k,pixel_scale):
+def weigths_w(xy_mesh,shape,pa,eps,x0,y0,ring,delta,k,pixel_scale):
 
-	r_n = Rings(xy_mesh,pa,inc,x0,y0,pixel_scale)
+	r_n = Rings(xy_mesh,pa,eps,x0,y0,pixel_scale)
 	a_k = ring
 
 
@@ -23,20 +23,20 @@ def weigths_w(xy_mesh,shape,pa,inc,x0,y0,ring,delta,k,pixel_scale):
 	return np.ravel(w_k_n),np.ravel(w_k_plus_1_n),mask
 
 
-def cos_sin(xy_mesh,pa,inc,x0,y0,pixel_scale=1):
+def cos_sin(xy_mesh,pa,eps,x0,y0,pixel_scale=1):
 	(x,y) = xy_mesh
-	R  = Rings(xy_mesh,pa,inc,x0,y0,pixel_scale)
+	R  = Rings(xy_mesh,pa,eps,x0,y0,pixel_scale)
 
 	cos_tetha = (- (x-x0)*np.sin(pa) + (y-y0)*np.cos(pa))/R
-	sin_tetha = (- (x-x0)*np.cos(pa) - (y-y0)*np.sin(pa))/(np.cos(inc)*R)
+	sin_tetha = (- (x-x0)*np.cos(pa) - (y-y0)*np.sin(pa))/((1-eps)*R)
 
 	#return np.ravel(cos_tetha),np.ravel(sin_tetha)
 	return cos_tetha,sin_tetha
 
 
-def trigonometric_weights(xy_mesh,pa,inc,x0,y0,phi_b,mask,vmode="radial",pixel_scale=1, m_hrm = 1):
-
-	cos,sin = cos_sin(xy_mesh,pa,inc,x0,y0)
+def trigonometric_weights(xy_mesh,pa,eps,x0,y0,phi_b,mask,vmode="radial",pixel_scale=1, m_hrm = 1):
+	inc = eps_2_inc(eps)
+	cos,sin = cos_sin(xy_mesh,pa,eps,x0,y0)
 	cos,sin = cos[mask],sin[mask]
 
 	if vmode == "circular":
@@ -81,12 +81,12 @@ def trigonometric_weights(xy_mesh,pa,inc,x0,y0,phi_b,mask,vmode="radial",pixel_s
 
 
 
-def M_tab(pa,inc,x0,y0,theta_b,rings, delta,k, shape, vel_map, evel_map, pixel_scale=1,vmode = "radial", m_hrm = 1):
+def M_tab(pa,eps,x0,y0,theta_b,rings, delta,k, shape, vel_map, evel_map, pixel_scale=1,vmode = "radial", m_hrm = 1):
 
 	[ny,nx] = shape
 
 
-	pa, inc , phi_b = pa*np.pi/180, inc*np.pi/180 , theta_b*np.pi/180 
+	pa, phi_b = pa*np.pi/180, theta_b*np.pi/180 
 	X = np.arange(0, nx, 1)
 	Y = np.arange(0, ny, 1)
 	xy_mesh = np.meshgrid(X,Y)
@@ -97,11 +97,11 @@ def M_tab(pa,inc,x0,y0,theta_b,rings, delta,k, shape, vel_map, evel_map, pixel_s
 	if vmode == "circular":
 
 
-		weigths_k,weigths_j,mask = weigths_w(xy_mesh,shape,pa,inc,x0,y0,rings,delta,k,pixel_scale =pixel_scale)
+		weigths_k,weigths_j,mask = weigths_w(xy_mesh,shape,pa,eps,x0,y0,rings,delta,k,pixel_scale =pixel_scale)
 		weigths_k,weigths_j = np.asarray(weigths_k),np.asarray(weigths_j)
 
 
-		w_rot = trigonometric_weights(xy_mesh,pa,inc,x0,y0,0,mask,vmode)
+		w_rot = trigonometric_weights(xy_mesh,pa,eps,x0,y0,0,mask,vmode)
 
 
 		sigma_v = e_vel[mask]
@@ -128,11 +128,11 @@ def M_tab(pa,inc,x0,y0,theta_b,rings, delta,k, shape, vel_map, evel_map, pixel_s
 
 	if vmode == "radial":
 
-		weigths_k,weigths_j,mask = weigths_w(xy_mesh,shape,pa,inc,x0,y0,rings,delta,k,pixel_scale =pixel_scale)
+		weigths_k,weigths_j,mask = weigths_w(xy_mesh,shape,pa,eps,x0,y0,rings,delta,k,pixel_scale =pixel_scale)
 		weigths_k,weigths_j = np.asarray(weigths_k),np.asarray(weigths_j)
 
 
-		w_rot, w_rad = trigonometric_weights(xy_mesh,pa,inc,x0,y0,0,mask,vmode)
+		w_rot, w_rad = trigonometric_weights(xy_mesh,pa,eps,x0,y0,0,mask,vmode)
 
 		sigma_v = e_vel[mask]
 		x11,x12 = w_rot**2/sigma_v**2,w_rot*w_rad/sigma_v**2
@@ -157,11 +157,11 @@ def M_tab(pa,inc,x0,y0,theta_b,rings, delta,k, shape, vel_map, evel_map, pixel_s
 
 	if vmode == "bisymmetric":
 
-		weigths_k,weigths_j,mask = weigths_w(xy_mesh,shape,pa,inc,x0,y0,rings,delta,k,pixel_scale =pixel_scale)
+		weigths_k,weigths_j,mask = weigths_w(xy_mesh,shape,pa,eps,x0,y0,rings,delta,k,pixel_scale =pixel_scale)
 		weigths_k,weigths_j = np.asarray(weigths_k),np.asarray(weigths_j)
 
 
-		w_rot, w_rad, w_tan = trigonometric_weights(xy_mesh,pa,inc,x0,y0,phi_b,mask,vmode)
+		w_rot, w_rad, w_tan = trigonometric_weights(xy_mesh,pa,eps,x0,y0,phi_b,mask,vmode)
 
 		sigma_v = e_vel[mask]
 		x11,x12,x13 = w_rot**2/sigma_v**2,w_rot*w_rad/sigma_v**2,w_tan*w_rot/sigma_v**2
@@ -194,11 +194,11 @@ def M_tab(pa,inc,x0,y0,theta_b,rings, delta,k, shape, vel_map, evel_map, pixel_s
 
 
 	if "hrm" in vmode:
-		weigths_k,weigths_j,mask = weigths_w(xy_mesh,shape,pa,inc,x0,y0,rings,delta,k,pixel_scale =pixel_scale)
+		weigths_k,weigths_j,mask = weigths_w(xy_mesh,shape,pa,eps,x0,y0,rings,delta,k,pixel_scale =pixel_scale)
 		weigths_k,weigths_j = np.asarray(weigths_k),np.asarray(weigths_j)
 
 
-		w_c, w_s = trigonometric_weights(xy_mesh,pa,inc,x0,y0,0,mask,vmode, m_hrm = m_hrm)
+		w_c, w_s = trigonometric_weights(xy_mesh,pa,eps,x0,y0,0,mask,vmode, m_hrm = m_hrm)
 		w = w_c + w_s
 
 		m = 2*m_hrm

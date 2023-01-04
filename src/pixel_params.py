@@ -1,15 +1,26 @@
 import numpy as np
 import matplotlib.pylab as plt
 
+def eps_2_inc(eps):
+	cos_i = 1-eps
+	inc = np.arccos(cos_i)
+	return inc
 
-def Rings(xy_mesh,pa,inc,x0,y0,pixel_scale=1):
+
+def inc_2_eps(inc):
+	inc = inc*np.pi/180
+	eps = 1-np.cos(inc)
+	return eps
+
+
+def Rings(xy_mesh,pa,eps,x0,y0,pixel_scale=1):
 
 	(x,y) = xy_mesh
 
 	X = (- (x-x0)*np.sin(pa) + (y-y0)*np.cos(pa))
 	Y = (- (x-x0)*np.cos(pa) - (y-y0)*np.sin(pa))
 
-	R= np.sqrt(X**2+(Y/np.cos(inc))**2)
+	R= np.sqrt(X**2+(Y/(1-eps))**2)
 
 	return R*pixel_scale
 
@@ -23,10 +34,10 @@ def v_interp(r, r2, r1, v2, v1 ):
 #######################################################3
 
 
-def ring_pixels(xy_mesh,pa,inc,x0,y0,ring,delta,pixel_scale):
-	pa,inc=pa*np.pi/180,inc*np.pi/180
+def ring_pixels(xy_mesh,pa,eps,x0,y0,ring,delta,pixel_scale):
+	pa=pa*np.pi/180
 
-	r_n = Rings(xy_mesh,pa,inc,x0,y0,pixel_scale)
+	r_n = Rings(xy_mesh,pa,eps,x0,y0,pixel_scale)
 	a_k = ring
 
 
@@ -36,7 +47,7 @@ def ring_pixels(xy_mesh,pa,inc,x0,y0,ring,delta,pixel_scale):
 	return mask
 
 
-def pixels(shape,vel,pa,inc,x0,y0,ring, delta=1,pixel_scale = 1):
+def pixels(shape,vel,pa,eps,x0,y0,ring, delta=1,pixel_scale = 1):
 
 	[ny,nx] = shape
 
@@ -45,7 +56,7 @@ def pixels(shape,vel,pa,inc,x0,y0,ring, delta=1,pixel_scale = 1):
 	y = np.arange(0, ny, 1)
 
 	XY_mesh = np.meshgrid(x,y,sparse=True)
-	r_pixels_mask = ring_pixels(XY_mesh,pa,inc,x0,y0,ring,delta,pixel_scale)
+	r_pixels_mask = ring_pixels(XY_mesh,pa,eps,x0,y0,ring,delta,pixel_scale)
 	mask = r_pixels_mask
 
 	indices = np.indices((ny,nx))

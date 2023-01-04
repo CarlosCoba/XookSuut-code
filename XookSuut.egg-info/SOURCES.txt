@@ -9,7 +9,6 @@ kin_radial_model_example.png
 logo.png
 requirements.txt
 setup.py
-upload_files_to_git.txt
 XookSuut.egg-info/PKG-INFO
 XookSuut.egg-info/SOURCES.txt
 XookSuut.egg-info/dependency_links.txt
@@ -69,6 +68,7 @@ src/resample.py
 src/save_fits_1D_model.py
 src/save_fits_1D_model_harmonic.py
 src/save_fits_2D_model.py
+src/save_mcmc_outs.py
 src/start_messenge.py
 src/tools_fits.py
 src/weights_interp.py
@@ -123,6 +123,7 @@ src/__pycache__/resample.cpython-36.pyc
 src/__pycache__/save_fits_1D_model.cpython-36.pyc
 src/__pycache__/save_fits_1D_model_harmonic.cpython-36.pyc
 src/__pycache__/save_fits_2D_model.cpython-36.pyc
+src/__pycache__/save_mcmc_outs.cpython-36.pyc
 src/__pycache__/start_messenge.cpython-36.pyc
 src/__pycache__/tools_fits.cpython-36.pyc
 src/__pycache__/weights_interp.cpython-36.pyc

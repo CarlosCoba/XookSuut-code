@@ -10,13 +10,13 @@ import random
 
 
  
-def Rings(xy_mesh,pa,inc,x0,y0,pixel_scale):
+def Rings(xy_mesh,pa,eps,x0,y0,pixel_scale):
 	(x,y) = xy_mesh
 
 	X = (- (x-x0)*np.sin(pa) + (y-y0)*np.cos(pa))
 	Y = (- (x-x0)*np.cos(pa) - (y-y0)*np.sin(pa))
 
-	R= np.sqrt(X**2+(Y/np.cos(inc))**2)
+	R= np.sqrt(X**2+(Y/(1-eps))**2)
 
 	return R*pixel_scale
 
@@ -46,19 +46,19 @@ class Least_square_fit:
 		else:
 			self.vary_kin = 1
 		if "hrm" in vmode:
-			self.c_k0, self.s_k0,self.pa0,self.inc0,self.xc0,self.yc0,self.vsys0,self.phi_bar = guess
-			constant_params = [self.pa0,self.inc0,self.xc0,self.yc0,self.vsys0]
-			self.vary_pa,self.vary_inc,self.vary_xc,self.vary_yc,self.vary_vsys,self.vary_theta = vary
+			self.c_k0, self.s_k0,self.pa0,self.eps0,self.xc0,self.yc0,self.vsys0,self.phi_bar = guess
+			constant_params = [self.pa0,self.eps0,self.xc0,self.yc0,self.vsys0]
+			self.vary_pa,self.vary_eps,self.vary_xc,self.vary_yc,self.vary_vsys,self.vary_phib = vary
 			self.vary_sk, self.vary_ck = True, True
 
 		
 		else:
-			self.vrot0,self.vrad0,self.vtan0,self.pa0,self.inc0,self.xc0,self.yc0,self.vsys0,self.phi_bar = guess
+			self.vrot0,self.vrad0,self.vtan0,self.pa0,self.eps0,self.xc0,self.yc0,self.vsys0,self.phi_bar = guess
 			n_circ,n_noncirc = len(self.vrot0),len(self.vrad0[self.vrad0!=0])
 			if n_noncirc !=n_circ:
 				self.vrad0[n_noncirc],self.vtan0[n_noncirc]=1e-3,1e-3
-			constant_params = [self.pa0,self.inc0,self.xc0,self.yc0,self.vsys0,self.phi_bar]
-			self.vary_pa,self.vary_inc,self.vary_xc,self.vary_yc,self.vary_vsys,self.vary_theta = vary
+			constant_params = [self.pa0,self.eps0,self.xc0,self.yc0,self.vsys0,self.phi_bar]
+			self.vary_pa,self.vary_eps,self.vary_xc,self.vary_yc,self.vary_vsys,self.vary_phib = vary
 			self.vary_vrot, self.vary_vrad, self.vary_vtan = 1*self.vary_kin, 1*self.vary_kin, 1*self.vary_kin
 
 		self.m_hrm = m_hrm
@@ -87,7 +87,7 @@ class Least_square_fit:
 
 		if self.xc0 % int(self.xc0) == 0 or self.yc0 % int(self.yc0) == 0 : 
 			self.xc0, self.yc0 =  self.xc0 + 1e-5, self.yc0 + 1e-5
-		self.r_n = Rings(self.XY_mesh,self.pa0*np.pi/180,self.inc0*np.pi/180,self.xc0,self.yc0,pixel_scale)
+		self.r_n = Rings(self.XY_mesh,self.pa0*np.pi/180,self.eps0,self.xc0,self.yc0,pixel_scale)
 		self.r_n = np.asarray(self.r_n, dtype = np.longdouble)
 		self.pixel_scale = pixel_scale
 		self.frac_pixel = frac_pixel
@@ -113,30 +113,41 @@ class Least_square_fit:
 
 		config_const = config['constant_params']
 		self.Vmin, self.Vmax = -450, 450
+		eps_min, eps_max = 1-np.cos(25*np.pi/180),1-np.cos(80*np.pi/180)
 		self.PAmin,self.PAmax,self.vary_pa = config_const.getfloat('MIN_PA', 0), config_const.getfloat('MAX_PA', 360),config_const.getboolean('FIT_PA', self.vary_pa)
-		self.INCmin,self.INCmax,self.vary_inc = config_const.getfloat('MIN_INC', 5), config_const.getfloat('MAX_INC', 80),config_const.getboolean('FIT_INC', self.vary_inc)
+		self.INCmin,self.INCmax,self.vary_eps = config_const.getfloat('MIN_INC', eps_min), config_const.getfloat('MAX_INC', eps_max),config_const.getboolean('FIT_INC', self.vary_eps)
 		self.X0min,self.X0max,self.vary_xc = config_const.getfloat('MIN_X0', 0), config_const.getfloat('MAX_X0', self.nx),config_const.getboolean('FIT_X0', self.vary_xc)
 		self.Y0min,self.Y0max,self.vary_yc = config_const.getfloat('MIN_Y0', 0), config_const.getfloat('MAX_Y0', self.ny),config_const.getboolean('FIT_Y0', self.vary_yc)
 		self.VSYSmin,self.VSYSmax,self.vary_vsys = config_const.getfloat('MIN_VSYS', 0), config_const.getfloat('MAX_VSYS', np.inf),config_const.getboolean('FIT_VSYS', self.vary_vsys)
-		self.PAbarmin,self.PAbarmax,self.vary_theta = config_const.getfloat('MIN_PHI_BAR', -180), config_const.getfloat('MAX_PHI_BAR', 180),config_const.getboolean('FIT_PHI_BAR', self.vary_theta)
+		self.PAbarmin,self.PAbarmax,self.vary_phib = config_const.getfloat('MIN_PHI_BAR', -np.pi), config_const.getfloat('MAX_PHI_BAR', np.pi),config_const.getboolean('FIT_PHI_BAR', self.vary_phib)
 
 		config_general = config['general']
 		outliers = config_general.getboolean('outliers', False)
 		if outliers: self.kwargs["loss"]="cauchy"
-		
+
+		self.PA = config_const.getfloat('PA',self.pa0)
+		self.INC = config_const.getfloat('INC',False);
+		# Transform inc to ellipticity
+		self.EPS =  1-np.cos(self.INC*np.pi/180) if self.INC != False else self.eps0 
+		self.X0 = config_const.getfloat('X0',self.xc0)
+		self.Y0 = config_const.getfloat('Y0',self.yc0)
+		self.VSYS = config_const.getfloat('YC',self.vsys0)
+		self.PHI_BAR = config_const.getfloat('PHI_BAR',False)
+		self.PHI_BAR = self.PHI_BAR*np.pi/180. if self.PHI_BAR != False else self.phi_bar
+
 
 class Config_params(Least_square_fit):
 
 		def assign_constpars(self,pars):
 
 			#if self.config in self.osi:
-			pars.add('Vsys', value=self.vsys0, vary = self.vary_vsys, min = self.VSYSmin)
-			pars.add('pa', value=self.pa0, vary = self.vary_pa, min = self.PAmin, max = self.PAmax)
-			pars.add('inc', value=self.inc0, vary = self.vary_inc, min = self.INCmin, max = self.INCmax)
-			pars.add('x0', value=self.xc0, vary = self.vary_xc,  min = self.X0min, max = self.X0max)
-			pars.add('y0', value=self.yc0, vary = self.vary_yc, min = self.Y0min, max = self.Y0max)
+			pars.add('Vsys', value=self.VSYS, vary = self.vary_vsys, min = self.VSYSmin)
+			pars.add('pa', value=self.PA, vary = self.vary_pa, min = self.PAmin, max = self.PAmax)
+			pars.add('eps', value=self.EPS, vary = self.vary_eps, min = self.INCmin, max = self.INCmax)
+			pars.add('x0', value=self.X0, vary = self.vary_xc,  min = self.X0min, max = self.X0max)
+			pars.add('y0', value=self.Y0, vary = self.vary_yc, min = self.Y0min, max = self.Y0max)
 			if self.vmode == "bisymmetric":
-				pars.add('phi_b', value=self.phi_bar, vary = self.vary_theta, min = self.PAbarmin , max = self.PAbarmax)
+				pars.add('phi_b', value=self.PHI_BAR, vary = self.vary_phib, min = self.PAbarmin , max = self.PAbarmax)
 
 
 		def tune_velocities(self,pars,iy):
@@ -201,7 +212,7 @@ class Models(Config_params):
 
 				pars = pars.valuesdict()
 				pa = pars['pa']
-				inc = pars['inc']
+				eps = pars['eps']
 				x0,y0 = pars['x0'],pars['y0']
 
 				# For inner interpolation
@@ -244,21 +255,21 @@ class Models(Config_params):
 					Vrot = pars['Vrot_%i'% i]
 
 				if self.vmode == "circular":
-					modl = (CIRC_MODEL(xy_mesh,Vrot,pa,inc,x0,y0))*weigths_w(xy_mesh,pa,inc,x0,y0,r_0,r_space,pixel_scale=self.pixel_scale)
+					modl = (CIRC_MODEL(xy_mesh,Vrot,pa,eps,x0,y0))*weigths_w(xy_mesh,pa,eps,x0,y0,r_0,r_space,pixel_scale=self.pixel_scale)
 				if self.vmode == "radial":
 					Vrad = pars['Vrad_%i'% i]
-					modl = (RADIAL_MODEL(xy_mesh,Vrot,Vrad,pa,inc,x0,y0))*weigths_w(xy_mesh,pa,inc,x0,y0,r_0,r_space,pixel_scale=self.pixel_scale)
+					modl = (RADIAL_MODEL(xy_mesh,Vrot,Vrad,pa,eps,x0,y0))*weigths_w(xy_mesh,pa,eps,x0,y0,r_0,r_space,pixel_scale=self.pixel_scale)
 				if self.vmode == "bisymmetric":
 					Vrad = pars['Vrad_%i'% i]
 					Vtan = pars['Vtan_%i'% i]
 					if Vrad != 0 and Vtan != 0:
 						phi_b = pars['phi_b']
-						modl = (BISYM_MODEL(xy_mesh,Vrot,Vrad,pa,inc,x0,y0,Vtan,phi_b))*weigths_w(xy_mesh,pa,inc,x0,y0,r_0,r_space,pixel_scale=self.pixel_scale)
+						modl = (BISYM_MODEL(xy_mesh,Vrot,Vrad,pa,eps,x0,y0,Vtan,phi_b))*weigths_w(xy_mesh,pa,eps,x0,y0,r_0,r_space,pixel_scale=self.pixel_scale)
 					else:
-						modl = (CIRC_MODEL(xy_mesh,Vrot,pa,inc,x0,y0))*weigths_w(xy_mesh,pa,inc,x0,y0,r_0,r_space,pixel_scale=self.pixel_scale)
+						modl = (CIRC_MODEL(xy_mesh,Vrot,pa,eps,x0,y0))*weigths_w(xy_mesh,pa,eps,x0,y0,r_0,r_space,pixel_scale=self.pixel_scale)
 				if "hrm" in self.vmode:
 					C_k, S_k  = [pars['C%s_%i'% (k,i)] for k in range(1,self.m_hrm+1)], [pars['S%s_%i'% (k,i)] for k in range(1,self.m_hrm+1)]
-					modl = (HARMONIC_MODEL(xy_mesh,C_k, S_k,pa,inc,x0,y0, m_hrm = self.m_hrm))*weigths_w(xy_mesh,pa,inc,x0,y0,r_0,r_space,pixel_scale=self.pixel_scale)
+					modl = (HARMONIC_MODEL(xy_mesh,C_k, S_k,pa,eps,x0,y0, m_hrm = self.m_hrm))*weigths_w(xy_mesh,pa,eps,x0,y0,r_0,r_space,pixel_scale=self.pixel_scale)
 				return modl
 
 
@@ -325,11 +336,11 @@ class Fit_kin_mdls(Models):
 			red_chi = out.redchi
 
 
-			constant_parms = np.asarray( [best["pa"].value, best["inc"].value, best["x0"].value,best["y0"].value, best["Vsys"].value, 45] )
-			e_constant_parms =  [ best["pa"].stderr, best["inc"].stderr, best["x0"].stderr, best["y0"].stderr, best["Vsys"].stderr, 0] 
+			constant_parms = np.asarray( [best["pa"].value, best["eps"].value, best["x0"].value,best["y0"].value, best["Vsys"].value, 45] )
+			e_constant_parms =  [ best["pa"].stderr, best["eps"].stderr, best["x0"].stderr, best["y0"].stderr, best["Vsys"].stderr, 0] 
 
-			pa, inc, x0, y0, Vsys, phi_b = constant_parms
-			std_pa, std_inc, std_x0, std_y0, std_Vsys, std_phi_b = list(e_constant_parms)
+			pa, eps, x0, y0, Vsys, phi_b = constant_parms
+			std_pa, std_eps, std_x0, std_y0, std_Vsys, std_phi_b = list(e_constant_parms)
 
 			if "hrm" not in self.vmode:
 				v_kin = ["Vrot","Vrad", "Vtan"]
@@ -358,7 +369,7 @@ class Fit_kin_mdls(Models):
 
 			if None in e_constant_parms:  e_constant_parms = [1e-3]*len(constant_parms)
 
-			create_2D = best_2d_model(self.vmode, [self.ny,self.nx], self.V_k, pa, inc, x0, y0, Vsys, self.rings_pos, self.ring_space, self.pixel_scale, self.v_center , self.m_hrm, phi_b)
+			create_2D = best_2d_model(self.vmode, [self.ny,self.nx], self.V_k, pa, eps, x0, y0, Vsys, self.rings_pos, self.ring_space, self.pixel_scale, self.v_center , self.m_hrm, phi_b)
 			vlos_2D_model = create_2D.model2D()
 
 			#"""
@@ -366,11 +377,11 @@ class Fit_kin_mdls(Models):
 			
 			delta = 0.5*(self.rings_pos[1] - self.rings_pos[0])
 			# Recompute fraction of pixels per ring with the best values
-			fpix = np.array([pixels([self.ny,self.nx],self.vel_map,pa,inc,x0,y0,k, delta=delta,pixel_scale = self.pixel_scale) for k in self.rings_pos])
+			fpix = np.array([pixels([self.ny,self.nx],self.vel_map,pa,eps,x0,y0,k, delta=delta,pixel_scale = self.pixel_scale) for k in self.rings_pos])
 			mask_fpix = fpix > self.frac_pixel
 			# This should be the real number of rings
 			true_rings = self.rings_pos[mask_fpix]
-			Rn = Rings(self.XY_mesh,pa*np.pi/180,inc*np.pi/180,x0,y0,self.pixel_scale)
+			Rn = Rings(self.XY_mesh,pa*np.pi/180,eps,x0,y0,self.pixel_scale)
 			Rn[Rn > true_rings[-1]]= np.nan
 			# A simple way for applying a mask
 			vlos_2D_model = vlos_2D_model*Rn/Rn
@@ -404,11 +415,11 @@ class Fit_kin_mdls(Models):
 
 			if len(self.V_k) != len(self.V_k_std)  : self.V_k_std = [1e-3]*len(self.V_k)
 			##########
-			interp_mdl =  bidi_models(self.vmode, [self.ny,self.nx], self.V_k, pa, inc, x0, y0, Vsys, self.rings_pos, self.ring_space, self.pixel_scale, self.v_center, self.m_hrm, phi_b) 
+			interp_mdl =  bidi_models(self.vmode, [self.ny,self.nx], self.V_k, pa, eps, x0, y0, Vsys, self.rings_pos, self.ring_space, self.pixel_scale, self.v_center, self.m_hrm, phi_b) 
 			kin_2D_models = interp_mdl.interp()
 			##########
 			out_data = [N_free, N_nvarys, N_data, bic, aic, red_chi]
-			return vlos_2D_model, kin_2D_models, self.V_k, pa, inc , x0, y0, Vsys, phi_b, out_data, errors, true_rings
+			return vlos_2D_model, kin_2D_models, self.V_k, pa, eps , x0, y0, Vsys, phi_b, out_data, errors, true_rings
 
 
 

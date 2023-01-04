@@ -98,6 +98,7 @@ def plot_kin_models(galaxy,vmode,vel_ha,R,Vrot,eVrot,Vrad,eVrad,Vtan,eVtan,VSYS,
 
 
 	if vmode == "circular":
+
 		ax3.plot(R,Vrot, color = "#362a1b",linestyle='-', alpha = 1, linewidth=0.8, label = "$\mathrm{V_{t}}$")
 		ax3.fill_between(R, Vrot-eVrot, Vrot+eVrot, color = "#362a1b", alpha = 0.3, linewidth = 0)
 
@@ -109,17 +110,13 @@ def plot_kin_models(galaxy,vmode,vel_ha,R,Vrot,eVrot,Vrad,eVrad,Vtan,eVtan,VSYS,
 		ax3.plot(R,Vrad, color = "#c73412",linestyle='-', alpha = 0.6, linewidth=0.8, label = "$\mathrm{V_{r}}$")
 		ax3.fill_between(R, Vrad-eVrad, Vrad+eVrad, color = "#c73412", alpha = 0.3, linewidth = 0)
 
-
-
-
 	if vmode == "bisymmetric":
+
 		ax3.plot(R,Vrot, color = "#362a1b",linestyle='-', alpha = 1, linewidth=0.8, label = "$\mathrm{V_{t}}$")
 		ax3.fill_between(R, Vrot-eVrot, Vrot+eVrot, color = "#362a1b", alpha = 0.3, linewidth = 0)
 
-
 		ax3.plot(R,Vrad, color = "#c73412",linestyle='-', alpha = 1, linewidth=0.8, label = "$\mathrm{V_{2,r}}$")
 		ax3.fill_between(R, Vrad-eVrad, Vrad+eVrad, color = "#c73412", alpha = 0.3, linewidth = 0)
-
 
 		ax3.plot(R,Vtan, color = "#2fa7ce",linestyle='-', alpha = 1, linewidth=0.8, label = "$\mathrm{V_{2,t}}$")
 		ax3.fill_between(R, Vtan-eVtan, Vtan+eVtan, color = "#2fa7ce", alpha = 0.3, linewidth = 0)

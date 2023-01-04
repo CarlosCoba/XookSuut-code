@@ -19,15 +19,14 @@ XookSuut (XS)
 Description
 ===========
 XookSuut or XS for short, is a python tool developed to model non-circular motions on 2D velocity maps,
-such as those obtained from Integral Field Spectroscopy data, i.e., stellar and ionized-gas velocity maps. Even though  XS can run
+such as those obtained from Integral Field Spectroscopy data, i.e., stellar and ionized-gas velocity maps; even though  XS can run
 on any velocity map whose representation is in 2D maps.
-XS creates interpolated models, which means that the velocity in each pixel is created from the interpolation of two subsequent velocities.
-XS is able to model circular rotation models, axissymetric radial flows, bisymmetric flows, and a general harmonic decomposition of the LOSV.
-In order to derive the best set of parameters on each kinematic model XS performs a Least-Square analysis, using all spaxels from the input velocity
+In order to derive the best kinematic model XS performs a Least-Squares analysis together with Bayesian inference methods to survey
+the propability space given by the Posterior distribution, or the volume space ocupied by the priors.
+XS adopts the most popular MCMC algorithms (emcee & zeus), and Dynamic Nested sampling (dynesty) to infer the best fit parameters.
+XS is able to model circular rotation models, axisymetric radial flows, bisymmetric flows, and a general harmonic decomposition of the LOSV.
+In order to derive the best set of parameters on each kinematic model XS uses all spaxels from the input velocity
 map; thus, large images could take time large CPU time for deriving the best model. 
-In addition, XS is able to derive the best set of parameters by sampling their posterior distribution by implementing Markov-Chain Monte-Carlo methods (MCMC).
-In this way each parameter is obtained from marginalizing their individual posterior distribution.
-Note that these are two different approaches and could give different results ! 
 
 
 Dependencies
@@ -63,7 +62,7 @@ pip uninstall XookSuut
 Use
 ===========
 
-XS is designed to run in command line, but you can easely set-up a python script .py so you can run it as a .py script.
+XS is designed to run in command line, but you can easely set-up a python script .py so you can run it as a script.
 This last could be very usefull in case you want to analyse several objects in parallel !
 Please read the run_example.txt file to see how to run XS.
 XS requires a 2D velocity map in (km/s) and optionally a map containing the uncertainties on the velocities.
@@ -103,6 +102,7 @@ Referencing XookSuut
 
 If you are using XS in your work, please cite the XS release paper (), and dont forget citing DiskFit (Spekkens & Sellwood 2007) and RESWRI (Schoenmakers et al. 1997) since XS
 includes kinematic models from these two codes.
+XS relies on the following MCMC packages: emcee from (Foreman-Mackey+2013), Zeus (Karamanis+2021,2022); and Dynesty (Speagle 2020, Koposov +2022) for Nested sampling.
 Also, if you use the XS colormap (red-black-blue) in a different context, I would appreciate it, if you include XS in the acknowledgment section.
 
 

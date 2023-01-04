@@ -1,9 +1,9 @@
 import numpy as np
 from astropy.io import fits
+from src.pixel_params import eps_2_inc
 
 
-
-def save_model_h(galaxy,vmode,R,Ck,Sk,e_Ck,e_Sk,PA,INC,XC,YC,VSYS,m_hrm,errors_fit,bic_aic,e_ISM,out):
+def save_model_h(galaxy,vmode,R,Ck,Sk,e_Ck,e_Sk,PA,EPS,XC,YC,VSYS,m_hrm,errors_fit,bic_aic,e_ISM,out):
 
 	N_free, N_nvarys, N_data, bic, aic, redchi = bic_aic
 	nx, ny = len(R), 4*m_hrm + 1 
@@ -19,8 +19,8 @@ def save_model_h(galaxy,vmode,R,Ck,Sk,e_Ck,e_Sk,PA,INC,XC,YC,VSYS,m_hrm,errors_f
 
 
 
-	e_PA,e_INC,e_XC,e_YC,e_Vsys  = errors_fit[1]
-
+	e_PA,e_EPS,e_XC,e_YC,e_Vsys  = errors_fit[1]
+	INC, e_INC = eps_2_inc(EPS)*180/np.pi, eps_2_inc(e_EPS)*180/np.pi
 
 	hdu = fits.PrimaryHDU(data)
 
@@ -44,6 +44,8 @@ def save_model_h(galaxy,vmode,R,Ck,Sk,e_Ck,e_Sk,PA,INC,XC,YC,VSYS,m_hrm,errors_f
 
 	hdu.header['PA'] = PA
 	hdu.header['e_PA'] = e_PA
+	hdu.header['EPS'] = EPS
+	hdu.header['e_EPS'] = e_EPS
 	hdu.header['INC'] = INC
 	hdu.header['e_INC'] = e_INC
 	hdu.header['XC'] = XC

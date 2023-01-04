@@ -14,11 +14,11 @@ from src.convolution import gkernel, deconv_2D
 
 
 class best_2d_model:
-	def __init__(self,vmode,shape,V_k, pa, inc, x0, y0, Vsys, ring_pos, ring_space, pixel_scale, inner_interp, m_hrm = 1, phi_b = None, config_psf=None):
+	def __init__(self,vmode,shape,V_k, pa, eps, x0, y0, Vsys, ring_pos, ring_space, pixel_scale, inner_interp, m_hrm = 1, phi_b = None, config_psf=None):
 		self.vmode  =  vmode
 		self.shape = shape
 		[self.ny,self.nx] = shape
-		self.pa, self.inc, self.x0, self.y0, self.Vsys =pa, inc, x0, y0, Vsys
+		self.pa, self.eps, self.x0, self.y0, self.Vsys =pa, eps, x0, y0, Vsys
 		self.rings_pos = ring_pos
 		self.ring_space = ring_space
 		self.nrings = len(self.rings_pos)
@@ -47,7 +47,7 @@ class best_2d_model:
 		X = np.arange(0, nx, 1)
 		Y = np.arange(0, ny, 1)
 		self.XY_mesh = np.meshgrid(X,Y)
-		self.r_n = Rings(self.XY_mesh,self.pa*np.pi/180,self.inc*np.pi/180,self.x0,self.y0,pixel_scale)
+		self.r_n = Rings(self.XY_mesh,self.pa*np.pi/180,self.eps,self.x0,self.y0,pixel_scale)
 		self.interp_model = np.zeros((ny,nx))
 
 
@@ -92,21 +92,21 @@ class best_2d_model:
 		if "hrm" not in self.vmode:
 			Vrot = self.Vrot[i]
 		if self.vmode == "circular":
-			modl = (CIRC_MODEL(xy_mesh,Vrot,self.pa,self.inc,self.x0,self.y0))*weigths_w(xy_mesh,self.pa,self.inc,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
+			modl = (CIRC_MODEL(xy_mesh,Vrot,self.pa,self.eps,self.x0,self.y0))*weigths_w(xy_mesh,self.pa,self.eps,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
 		if self.vmode == "radial":
 			Vrad = self.Vrad[i]
-			modl = (RADIAL_MODEL(xy_mesh,Vrot,Vrad,self.pa,self.inc,self.x0,self.y0))*weigths_w(xy_mesh,self.pa,self.inc,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
+			modl = (RADIAL_MODEL(xy_mesh,Vrot,Vrad,self.pa,self.eps,self.x0,self.y0))*weigths_w(xy_mesh,self.pa,self.eps,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
 		if self.vmode == "bisymmetric":
 			Vrad = self.Vrad[i]
 			Vtan = self.Vtan[i]
 			if Vrad != 0 and Vtan != 0:
 				phi_b = self.phi_b
-				modl = (BISYM_MODEL(xy_mesh,Vrot,Vrad,self.pa,self.inc,self.x0,self.y0,Vtan,phi_b))*weigths_w(xy_mesh,self.pa,self.inc,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
+				modl = (BISYM_MODEL(xy_mesh,Vrot,Vrad,self.pa,self.eps,self.x0,self.y0,Vtan,phi_b))*weigths_w(xy_mesh,self.pa,self.eps,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
 			else:
-				modl = (BISYM_MODEL(xy_mesh,Vrot,0,self.pa,self.inc,self.x0,self.y0,0,0))*weigths_w(xy_mesh,self.pa,self.inc,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
+				modl = (BISYM_MODEL(xy_mesh,Vrot,0,self.pa,self.eps,self.x0,self.y0,0,0))*weigths_w(xy_mesh,self.pa,self.eps,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
 		if "hrm" in self.vmode:
 			c_k, s_k  = [self.C_k[k][i] for k in range(self.m_hrm)] , [self.S_k[k][i] for k in range(self.m_hrm)]
-			modl = (HARMONIC_MODEL(xy_mesh,c_k, s_k,self.pa,self.inc,self.x0,self.y0, self.m_hrm))*weigths_w(xy_mesh,self.pa,self.inc,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
+			modl = (HARMONIC_MODEL(xy_mesh,c_k, s_k,self.pa,self.eps,self.x0,self.y0, self.m_hrm))*weigths_w(xy_mesh,self.pa,self.eps,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
 
 		return modl
 

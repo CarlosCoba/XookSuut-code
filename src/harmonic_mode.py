@@ -36,7 +36,7 @@ class Harmonic_model:
 
 		self.r_bar_min, self.r_bar_max = self.bar_min_max
 
-		self.pa0,self.inc0,self.x0,self.y0,self.vsys0,self.theta_b = self.guess0
+		self.pa0,self.eps0,self.x0,self.y0,self.vsys0,self.theta_b = self.guess0
 		self.vmode = "hrm"
 		[ny,nx] = vel.shape
 		self.shape = [ny,nx]
@@ -45,7 +45,7 @@ class Harmonic_model:
 
 
 		#outs
-		self.PA,self.INC,self.XC,self.YC,self.VSYS,self.THETA = 0,0,0,0,0,0
+		self.PA,self.EPS,self.XC,self.YC,self.VSYS,self.THETA = 0,0,0,0,0,0
 		self.GUESS = []
 		self.C_k, self.S_k = [],[]
 		self.chisq_global = np.inf
@@ -95,14 +95,14 @@ class Harmonic_model:
 		c1_tab_it, c3_tab_it, s1_tab_it, s3_tab_it = np.zeros(self.nrings,), np.zeros(self.nrings,), np.zeros(self.nrings,),np.zeros(self.nrings,)
 		for it in np.arange(self.n_it):
 			# Here we create the tabulated model
-			c_tab, s_tab, R_pos = tab_mod_vels(self.rings,self.vel, self.evel, self.pa0,self.inc0,self.x0,self.y0,self.vsys0,self.theta_b,self.delta,self.pixel_scale,self.vmode,self.shape,self.frac_pixel,self.r_bar_min, self.r_bar_max, self.m_hrm)
+			c_tab, s_tab, R_pos = tab_mod_vels(self.rings,self.vel, self.evel, self.pa0,self.eps0,self.x0,self.y0,self.vsys0,self.theta_b,self.delta,self.pixel_scale,self.vmode,self.shape,self.frac_pixel,self.r_bar_min, self.r_bar_max, self.m_hrm)
 			c1_tab = c_tab[0]
 			c1_tab[abs(c1_tab) > 400] = np.nanmedian(c1_tab) 	
-			guess = [c_tab,s_tab,self.pa0,self.inc0,self.x0,self.y0,self.vsys0,self.theta_b]
+			guess = [c_tab,s_tab,self.pa0,self.eps0,self.x0,self.y0,self.vsys0,self.theta_b]
 
 			# Minimization
 			fitting = fit(self.vel, self.evel, guess, self.vary, self.vmode, self.config, R_pos, self.ring_space, self.fitmethod, self.e_ISM, self.pixel_scale, self.frac_pixel, self.inner_interp, self.m_hrm, N_it = self.n_it0)
-			self.v_2D_mdl, kin_2D_modls,  Vk_ , self.pa0, self.inc0, self.x0, self.y0, self.vsys0, self.phi_b0, out_data, Errors, true_rings = fitting.results()
+			self.v_2D_mdl, kin_2D_modls,  Vk_ , self.pa0, self.eps0, self.x0, self.y0, self.vsys0, self.phi_b0, out_data, Errors, true_rings = fitting.results()
 			xi_sq = out_data[-1]
 
 			c_k, s_k = Vk_[0:self.m_hrm],Vk_[self.m_hrm:]
@@ -120,7 +120,7 @@ class Harmonic_model:
 			# Keep the best fit 
 			if xi_sq < self.chisq_global:
 
-				self.PA,self.INC,self.XC,self.YC,self.VSYS = self.pa0, self.inc0, self.x0, self.y0, self.vsys0
+				self.PA,self.EPS,self.XC,self.YC,self.VSYS = self.pa0, self.eps0, self.x0, self.y0, self.vsys0
 				self.C_k, self.S_k = c_k, s_k 
 				self.chisq_global = xi_sq
 				self.aic_bic = out_data
@@ -128,7 +128,7 @@ class Harmonic_model:
 				self.best_kin_2D_models = kin_2D_modls
 				self.Rings = true_rings
 				self.std_errors = Errors
-				self.GUESS = [self.C_k, self.S_k, self.PA, self.INC, self.XC, self.YC, self.VSYS]
+				self.GUESS = [self.C_k, self.S_k, self.PA, self.EPS, self.XC, self.YC, self.VSYS]
 				self.n_circ = len(self.C_k[0])
 				self.n_noncirc = len((self.S_k[0])[self.S_k[0]!=0])
 
@@ -159,17 +159,17 @@ class Harmonic_model:
 			mdl_old = self.best_vlos_2D_model
 			res = self.vel_copy - mdl_old
 			# Inject a different seed per process !
-			new_vel = resampling(mdl_old,res,self.Rings,self.delta,self.PA,self.INC,self.XC,self.YC,self.pixel_scale,seed=seed0)
+			new_vel = resampling(mdl_old,res,self.Rings,self.delta,self.PA,self.EPS,self.XC,self.YC,self.pixel_scale,seed=seed0)
 			mdl_zero =  np.isfinite(new_vel)
 			# sum two arrays containing nans
 			new_vel_map = np.nansum(np.dstack((new_vel*mdl_zero,~mdl_zero*self.vel_copy)),2) ; new_vel_map[new_vel_map==0]=np.nan
 			self.vel = new_vel_map
 
 			lsq = self.lsq()
-			self.bootstrap_contstant_prms[k,:] = np.array ([ self.pa0, self.inc0, self.x0, self.y0, self.vsys0] )
+			self.bootstrap_contstant_prms[k,:] = np.array ([ self.pa0, self.eps0, self.x0, self.y0, self.vsys0] )
 			self.bootstrap_kin_c[k,:] = np.concatenate(self.c_k)
 			self.bootstrap_kin_s[k,:] = np.concatenate(self.s_k)
-			if self.parallel: return([[ self.pa0, self.inc0, self.x0, self.y0, self.vsys0], [np.concatenate(self.c_k), np.concatenate(self.s_k)]])
+			if self.parallel: return([[ self.pa0, self.eps0, self.x0, self.y0, self.vsys0], [np.concatenate(self.c_k), np.concatenate(self.s_k)]])
 
 		if self.parallel == False:
 			std_kin_c,std_kin_s = np.nanstd(self.bootstrap_kin_c,axis=0),np.nanstd(self.bootstrap_kin_s,axis=0)
@@ -209,11 +209,12 @@ class Harmonic_model:
 		n_noncirc = len(S[0])
 
 		#priors:
-		theta_list = [np.hstack(C), np.hstack(S), self.PA, self.INC, self.XC, self.YC, self.VSYS ]
+		theta_list = [np.hstack(C), np.hstack(S), self.PA, self.EPS, self.XC, self.YC, self.VSYS ]
 		theta0 = np.hstack(theta_list)
 
 		#Covariance of the proposal distribution
-		sigmas = np.divide( theta0,theta0)*1e-1	
+		sigmas = np.divide( theta0,theta0)*1e-2
+		sigmas[-5] = sigmas[-4]*1e-3 # this is eps	
 
 		# For the intrinsic scatter
 		theta0 = np.append(theta0, 1)
@@ -228,7 +229,7 @@ class Harmonic_model:
 		#MCMC RESULTS
 		mcmc_outs = MP(KinModel, data, model_params, mcmc_config, self.config_psf, self.inner_interp, self.n_circ, self.n_noncirc, self.m_hrm )
 		chain = mcmc_outs[0]
-		v_2D_mdl_, kin_2D_models_, Vk_,  PA_, INC_ , XC_, YC_, Vsys_, THETA_, self.std_errors = chain_res_mcmc(self.galaxy, self.vmode, theta0, mcmc_outs, self.shape, self.Rings, self.ring_space, self.pixel_scale, self.inner_interp,outdir = self.outdir, m_hrm=self.m_hrm, n_circ=self.n_circ, n_noncirc=self.n_noncirc, config_psf = self.config_psf, plot_chain = self.plot_chain )
+		v_2D_mdl_, kin_2D_models_, Vk_,  PA_, EPS_ , XC_, YC_, Vsys_, THETA_, self.std_errors = chain_res_mcmc(self.galaxy, self.vmode, theta0, mcmc_outs, self.shape, self.Rings, self.ring_space, self.pixel_scale, self.inner_interp,outdir = self.outdir, m_hrm=self.m_hrm, n_circ=self.n_circ, n_noncirc=self.n_noncirc, config_psf = self.config_psf, plot_chain = self.plot_chain )
 
 
 		#
@@ -245,7 +246,7 @@ class Harmonic_model:
 		c_k, s_k = Vk_
 
 		if self.use_best_mcmc:
-			self.PA, self.INC, self.XC, self.YC, self.VSYS = PA_, INC_, XC_,YC_,Vsys_
+			self.PA, self.EPS, self.XC, self.YC, self.VSYS = PA_, EPS_, XC_,YC_,Vsys_
 			self.C_k, self.S_k = c_k, s_k 
 			self.best_vlos_2D_model = v_2D_mdl_
 			self.best_kin_2D_models = kin_2D_models_
@@ -258,7 +259,7 @@ class Harmonic_model:
 			eboots= self.run_boost_para() if self.parallel else self.boots() 
 			if self.use_bootstrap:
 				mean_c, mean_s = np.nanmean(self.bootstrap_kin_c,axis=0),np.nanmean(self.bootstrap_kin_s,axis=0)
-				self.PA,self.INC,self.XC,self.YC,self.VSYS = np.nanmean(self.bootstrap_contstant_prms,axis=0)
+				self.PA,self.EPS,self.XC,self.YC,self.VSYS = np.nanmean(self.bootstrap_contstant_prms,axis=0)
 				self.C_k, self.S_k = np.array_split(mean_c, self.m_hrm), np.array_split(mean_s, self.m_hrm)
 
 		#emcee
@@ -273,7 +274,7 @@ class Harmonic_model:
 
 	def __call__(self):
 		out = self.output()
-		return self.PA,self.INC,self.XC,self.YC,self.VSYS,self.Rings,self.C_k,self.S_k,self.best_vlos_2D_model,self.best_kin_2D_models,self.aic_bic,self.std_errors
+		return self.PA,self.EPS,self.XC,self.YC,self.VSYS,self.Rings,self.C_k,self.S_k,self.best_vlos_2D_model,self.best_kin_2D_models,self.aic_bic,self.std_errors
 
 
 

@@ -1,14 +1,14 @@
 import numpy as np
 from astropy.io import fits
 from src.phi_bar_sky import error_pa_bar_sky
+from src.pixel_params import eps_2_inc
 
-
-def save_model(galaxy,vmode,R,Vrot,Vrad,Vtan,PA,INC,XC,YC,VSYS,THETA,PA_BAR_MAJOR,PA_BAR_MINOR,errors_fit,bic_aic, e_ISM, out):
+def save_model(galaxy,vmode,R,Vrot,Vrad,Vtan,PA,EPS,XC,YC,VSYS,THETA,PA_BAR_MAJOR,PA_BAR_MINOR,errors_fit,bic_aic, e_ISM, out):
 	#m = len(MODELS)
 	n = len(Vrot)
-	e_PA,e_INC,e_XC,e_YC,e_Vsys,e_theta  = errors_fit[1]
+	e_PA,e_EPS,e_XC,e_YC,e_Vsys,e_theta  = errors_fit[1]
 	e_Vrot,e_Vrad,e_Vtan  = errors_fit[0]
-
+	INC, e_INC = eps_2_inc(EPS)*180/np.pi, eps_2_inc(e_EPS)*180/np.pi
 	N_free, N_nvarys, N_data, bic, aic, redchi = bic_aic
 
 
@@ -77,6 +77,8 @@ def save_model(galaxy,vmode,R,Vrot,Vrad,Vtan,PA,INC,XC,YC,VSYS,THETA,PA_BAR_MAJO
 		hdu.header['AIC'] = aic
 		hdu.header['PA'] = PA
 		hdu.header['e_PA'] = e_PA
+		hdu.header['EPS'] = EPS
+		hdu.header['e_EPS'] = e_EPS
 		hdu.header['INC'] = INC
 		hdu.header['e_INC'] = e_INC
 		hdu.header['VSYS'] = VSYS
@@ -87,11 +89,11 @@ def save_model(galaxy,vmode,R,Vrot,Vrad,Vtan,PA,INC,XC,YC,VSYS,THETA,PA_BAR_MAJO
 		hdu.header['e_YC'] = e_YC
 
 		if vmode == "bisymmetric":
-			hdu.header['HIERARCH PHI_BAR'] = THETA
-			hdu.header['HIERARCH e_PHI_BAR'] = e_theta
+			hdu.header['HIERARCH PHI_BAR'] = THETA*180/np.pi
+			hdu.header['HIERARCH e_PHI_BAR'] = e_theta*180/np.pi
 			hdu.header['HIERARCH PA_BAR_MAJOR'] = PA_BAR_MAJOR
-			hdu.header['HIERARCH e_PA_BAR_MAJOR'] = error_pa_bar_sky(PA,INC,THETA,e_PA,e_INC,e_theta)
+			hdu.header['HIERARCH e_PA_BAR_MAJOR'] = error_pa_bar_sky(PA,EPS,THETA,e_PA,e_EPS,e_theta)
 			hdu.header['HIERARCH PA_BAR_MINOR'] = PA_BAR_MINOR
-			hdu.header['HIERARCH e_PA_BAR_MINOR'] = error_pa_bar_sky(PA,INC,THETA-90,e_PA,e_INC,e_theta)
+			hdu.header['HIERARCH e_PA_BAR_MINOR'] = error_pa_bar_sky(PA,EPS,THETA-np.pi/2,e_PA,e_EPS,e_theta)
 		
 		hdu.writeto("%smodels/%s.%s.1D_model.fits.gz"%(out,galaxy,vmode),overwrite=True)

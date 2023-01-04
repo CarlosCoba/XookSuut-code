@@ -71,12 +71,12 @@ class KinModel :
 				self.Vtan[:self.n_noncirc] = vtan
 
 
-			self.pa, self.inc, self.x0, self.y0, self.Vsys = theta[self.m],theta[self.m+1],theta[self.m+2],theta[self.m+3],theta[self.m+4]
+			self.pa, self.eps, self.x0, self.y0, self.Vsys = theta[self.m],theta[self.m+1],theta[self.m+2],theta[self.m+3],theta[self.m+4]
 			if self.vmode == "bisymmetric": self.phi_b = theta[self.m+5]
 
 			if "hrm" in self.vmode:
 				self.m = self.n_circ + self.n_noncirc*(2*self.m_hrm-1)
-				self.pa, self.inc, self.x0, self.y0, self.Vsys = theta[-5:]
+				self.pa, self.eps, self.x0, self.y0, self.Vsys = theta[-5:]
 
 			if "hrm" in self.vmode:
 				# C_flat and S_flat samples
@@ -84,9 +84,9 @@ class KinModel :
 				# Adding zeros to C, S
 				self.C_k, self.S_k = cs_k_add_zeros(C_flat,S_flat,self.m_hrm,self.n_circ,self.n_noncirc)
 
-			self.PA, self.INC, self.XC, self.YC = (self.theta0)[self.m],(self.theta0)[self.m+1],(self.theta0)[self.m+2],(self.theta0)[self.m+3]
-			#self.PA, self.INC, self.XC, self.YC = self.pa, self.inc, self.x0, self.y0
-			self.r_n = Rings(self.XY_mesh,self.PA*np.pi/180,self.INC*np.pi/180,self.XC,self.YC,self.pixel_scale)
+			self.PA, self.EPS, self.XC, self.YC = (self.theta0)[self.m],(self.theta0)[self.m+1],(self.theta0)[self.m+2],(self.theta0)[self.m+3]
+			#self.PA, self.EPS, self.XC, self.YC = self.pa, self.eps, self.x0, self.y0
+			self.r_n = Rings(self.XY_mesh,self.PA*np.pi/180,self.EPS,self.XC,self.YC,self.pixel_scale)
 	
 
 	def kinmdl_dataset(self, pars, i, xy_mesh, r_space, r_0 = None):
@@ -130,21 +130,21 @@ class KinModel :
 		if "hrm" not in self.vmode:
 			Vrot = self.Vrot[i]
 		if self.vmode == "circular":
-			modl = (CIRC_MODEL(xy_mesh,Vrot,self.pa,self.inc,self.x0,self.y0))*weigths_w(xy_mesh,self.pa,self.inc,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
+			modl = (CIRC_MODEL(xy_mesh,Vrot,self.pa,self.eps,self.x0,self.y0))*weigths_w(xy_mesh,self.pa,self.eps,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
 		if self.vmode == "radial":
 			Vrad = self.Vrad[i]
-			modl = (RADIAL_MODEL(xy_mesh,Vrot,Vrad,self.pa,self.inc,self.x0,self.y0))*weigths_w(xy_mesh,self.pa,self.inc,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
+			modl = (RADIAL_MODEL(xy_mesh,Vrot,Vrad,self.pa,self.eps,self.x0,self.y0))*weigths_w(xy_mesh,self.pa,self.eps,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
 		if self.vmode == "bisymmetric":
 			Vrad = self.Vrad[i]
 			Vtan = self.Vtan[i]
 			if Vrad != 0 and Vtan != 0:
 				phi_b = self.phi_b
-				modl = (BISYM_MODEL(xy_mesh,Vrot,Vrad,self.pa,self.inc,self.x0,self.y0,Vtan,phi_b))*weigths_w(xy_mesh,self.pa,self.inc,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
+				modl = (BISYM_MODEL(xy_mesh,Vrot,Vrad,self.pa,self.eps,self.x0,self.y0,Vtan,phi_b))*weigths_w(xy_mesh,self.pa,self.eps,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
 			else:
-				modl = (BISYM_MODEL(xy_mesh,Vrot,0,self.pa,self.inc,self.x0,self.y0,0,0))*weigths_w(xy_mesh,self.pa,self.inc,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
+				modl = (BISYM_MODEL(xy_mesh,Vrot,0,self.pa,self.eps,self.x0,self.y0,0,0))*weigths_w(xy_mesh,self.pa,self.eps,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
 		if "hrm" in self.vmode:
 			c_k, s_k  = [self.C_k[k][i] for k in range(self.m_hrm)] , [self.S_k[k][i] for k in range(self.m_hrm)]
-			modl = (HARMONIC_MODEL(xy_mesh,c_k, s_k,self.pa,self.inc,self.x0,self.y0, self.m_hrm))*weigths_w(xy_mesh,self.pa,self.inc,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
+			modl = (HARMONIC_MODEL(xy_mesh,c_k, s_k,self.pa,self.eps,self.x0,self.y0, self.m_hrm))*weigths_w(xy_mesh,self.pa,self.eps,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
 
 		return modl
 

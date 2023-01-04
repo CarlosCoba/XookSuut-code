@@ -42,14 +42,14 @@ class Bisymmetric_model:
 
 		self.r_bar_min, self.r_bar_max = self.bar_min_max
 
-		self.pa0,self.inc0,self.x0,self.y0,self.vsys0,self.theta_b = self.guess0
+		self.pa0,self.eps0,self.x0,self.y0,self.vsys0,self.theta_b = self.guess0
 		self.vmode = "bisymmetric"
 		[ny,nx] = vel.shape
 		self.shape = [ny,nx]
 
 
 		#outs
-		self.PA,self.INC,self.XC,self.YC,self.VSYS,self.THETA = 100,0,0,0,0,0
+		self.PA,self.EPS,self.XC,self.YC,self.VSYS,self.THETA = 100,0,0,0,0,0
 		self.GUESS = []
 		self.Vrot,self.Vrad,self.Vtan = [],[],[]
 		self.chisq_global = np.inf
@@ -103,14 +103,14 @@ class Bisymmetric_model:
 			if int(self.pa0) == 180: self.pa0 = 181
 
 			# Here we create the tabulated model			
-			vrot_tab, vrad_tab, vtan_tab, R_pos = tab_mod_vels(self.rings,self.vel, self.evel, self.pa0,self.inc0,self.x0,self.y0,self.vsys0,self.theta_b,self.delta,self.pixel_scale,self.vmode,self.shape,self.frac_pixel,self.r_bar_min, self.r_bar_max)
+			vrot_tab, vrad_tab, vtan_tab, R_pos = tab_mod_vels(self.rings,self.vel, self.evel, self.pa0,self.eps0,self.x0,self.y0,self.vsys0,self.theta_b,self.delta,self.pixel_scale,self.vmode,self.shape,self.frac_pixel,self.r_bar_min, self.r_bar_max)
 			vrot_tab[abs(vrot_tab) > 400] = np.nanmedian(vrot_tab) 
-			guess = [vrot_tab,vrad_tab,vtan_tab,self.pa0,self.inc0,self.x0,self.y0,self.vsys0,self.theta_b]
+			guess = [vrot_tab,vrad_tab,vtan_tab,self.pa0,self.eps0,self.x0,self.y0,self.vsys0,self.theta_b]
 			if it == 0: first_guess_it = guess
 
 			# Minimization
 			fitting = fit(self.vel, self.evel, guess, self.vary, self.vmode, self.config, R_pos, self.ring_space, self.fitmethod, self.e_ISM, self.pixel_scale, self.frac_pixel, self.inner_interp,N_it=self.n_it0)
-			self.v_2D_mdl, kin_2D_modls, Vk , self.pa0, self.inc0, self.x0, self.y0, self.vsys0, self.theta_b, out_data, Errors, true_rings = fitting.results()
+			self.v_2D_mdl, kin_2D_modls, Vk , self.pa0, self.eps0, self.x0, self.y0, self.vsys0, self.theta_b, out_data, Errors, true_rings = fitting.results()
 			xi_sq = out_data[-1]
 			#Unpack velocities 
 			vrot, vrad, vtan = Vk
@@ -124,7 +124,7 @@ class Bisymmetric_model:
 			# Keep the best fit 
 			if xi_sq < self.chisq_global:
 
-				self.PA,self.INC,self.XC,self.YC,self.VSYS,self.THETA = self.pa0, self.inc0, self.x0, self.y0,self.vsys0,self.theta_b
+				self.PA,self.EPS,self.XC,self.YC,self.VSYS,self.THETA = self.pa0, self.eps0, self.x0, self.y0,self.vsys0,self.theta_b
 				self.Vrot = np.asarray(vrot);self.n_circ = len(vrot)
 				self.Vrad = np.asarray(vrad)
 				self.Vtan = np.asarray(vtan)
@@ -134,7 +134,7 @@ class Bisymmetric_model:
 				self.best_kin_2D_models = kin_2D_modls
 				self.Rings = true_rings
 				self.std_errors = Errors
-				self.GUESS = [self.Vrot, self.Vrad, self.Vtan, self.PA, self.INC, self.XC, self.YC, self.VSYS, self.THETA]
+				self.GUESS = [self.Vrot, self.Vrad, self.Vtan, self.PA, self.EPS, self.XC, self.YC, self.VSYS, self.THETA]
 
 				self.bootstrap_kin = np.zeros((self.n_boot, 3*self.n_circ))
 
@@ -159,15 +159,15 @@ class Bisymmetric_model:
 			mdl_old = self.best_vlos_2D_model
 			res = self.vel_copy - mdl_old
 			# Inject a different seed per process !
-			new_vel = resampling(mdl_old,res,self.Rings,self.delta,self.PA,self.INC,self.XC,self.YC,self.pixel_scale,seed=seed0)
+			new_vel = resampling(mdl_old,res,self.Rings,self.delta,self.PA,self.EPS,self.XC,self.YC,self.pixel_scale,seed=seed0)
 			mdl_zero =  np.isfinite(new_vel)
 			# sum two arrays containing nans
 			new_vel_map = np.nansum(np.dstack((new_vel*mdl_zero,~mdl_zero*self.vel_copy)),2) ; new_vel_map[new_vel_map==0]=np.nan
 			self.vel = new_vel_map
 			lsq = self.lsq()
-			self.bootstrap_contstant_prms[k,:] = np.array ([ self.pa0, self.inc0, self.x0, self.y0, self.vsys0, self.theta_b ] )
+			self.bootstrap_contstant_prms[k,:] = np.array ([ self.pa0, self.eps0, self.x0, self.y0, self.vsys0, self.theta_b ] )
 			self.bootstrap_kin[k,:] = np.concatenate([self.vrot,self.vrad,self.vtan])
-			if self.parallel: return([[ self.pa0, self.inc0, self.x0, self.y0, self.vsys0, self.theta_b ], np.concatenate([self.vrot,self.vrad,self.vtan])])
+			if self.parallel: return([[ self.pa0, self.eps0, self.x0, self.y0, self.vsys0, self.theta_b ], np.concatenate([self.vrot,self.vrad,self.vtan])])
 
 		if self.parallel == False:
 			std_kin = np.nanstd(self.bootstrap_kin,axis=0)
@@ -199,10 +199,10 @@ class Bisymmetric_model:
 		Vtan_nonzero = self.Vtan[non_zero]
 		n_noncirc = len(Vrad_nonzero)
 
-		theta0 = np.asarray([self.Vrot, Vrad_nonzero, Vtan_nonzero, self.PA, self.INC, self.XC, self.YC, self.VSYS, self.THETA])
+		theta0 = np.asarray([self.Vrot, Vrad_nonzero, Vtan_nonzero, self.PA, self.EPS, self.XC, self.YC, self.VSYS, self.THETA])
 		n_circ = len(self.Vrot)
 		#Covariance of the proposal distribution
-		sigmas = np.array([np.ones(n_circ),np.ones(n_noncirc),np.ones(n_noncirc),1,1,1,1,1,1])*1e-1
+		sigmas = np.array([np.ones(n_circ),np.ones(n_noncirc),np.ones(n_noncirc),1,1e-3,1,1,1,1])*1e-2
 
 		# For the intrinsic scatter
 		theta0 = np.append(theta0, 1)
@@ -216,8 +216,8 @@ class Bisymmetric_model:
 		#MCMC RESULTS
 		from src.create_2D_vlos_model_mcmc import KinModel
 		mcmc_outs = MP(KinModel, data, model_params, mcmc_config, self.config_psf, self.inner_interp, n_circ, n_noncirc )
-		chain = mcmc_outs[0]
-		v_2D_mdl_, kin_2D_models_, Vk_,  PA_, INC_ , XC_, YC_, Vsys_, THETA_, self.std_errors = chain_res_mcmc(self.galaxy, self.vmode, theta0, mcmc_outs, self.shape, self.Rings, self.ring_space, self.pixel_scale, self.inner_interp,outdir = self.outdir, config_psf = self.config_psf, plot_chain = self.plot_chain)
+		chain, theta0 = mcmc_outs[0],mcmc_outs[-1]
+		v_2D_mdl_, kin_2D_models_, Vk_,  PA_, EPS_ , XC_, YC_, Vsys_, THETA_, self.std_errors = chain_res_mcmc(self.galaxy, self.vmode, theta0, mcmc_outs, self.shape, self.Rings, self.ring_space, self.pixel_scale, self.inner_interp,outdir = self.outdir, config_psf = self.config_psf, plot_chain = self.plot_chain)
 		#Unpack velocities 
 		Vrot_, Vrad_, Vtan_ = Vk_
 
@@ -227,7 +227,7 @@ class Bisymmetric_model:
 
 
 		if self.use_best_mcmc:
-			self.PA, self.INC, self.XC,self.YC,self.VSYS,self.THETA = PA_, INC_, XC_,YC_,Vsys_,THETA_
+			self.PA, self.EPS, self.XC,self.YC,self.VSYS,self.THETA = PA_, EPS_, XC_,YC_,Vsys_,THETA_
 			self.Vrot, self.Vrad, self.Vtan = Vrot_, Vrad_, Vtan_
 			self.best_vlos_2D_model = v_2D_mdl_
 			self.best_kin_2D_models = kin_2D_models_
@@ -243,7 +243,7 @@ class Bisymmetric_model:
 
 			if self.use_bootstrap:
 				mean_kin = np.nanmean(self.bootstrap_kin,axis=0)
-				self.PA,self.INC,self.XC,self.YC,self.VSYS,self.THETA = np.nanmean(self.bootstrap_contstant_prms,axis=0)
+				self.PA,self.EPS,self.XC,self.YC,self.VSYS,self.THETA = np.nanmean(self.bootstrap_contstant_prms,axis=0)
 				self.Vrot, self.Vrad, self.Vtan = mean_kin[0:self.n_circ],mean_kin[self.n_circ:2*self.n_circ],mean_kin[2*self.n_circ:]
 
 		#emcee
@@ -257,7 +257,7 @@ class Bisymmetric_model:
 	def __call__(self):
 		out = self.output()
 		# Propagation of errors on the sky bar position angle
-		PA_bar_major = pa_bar_sky(self.PA,self.INC,self.THETA)
-		PA_bar_minor = pa_bar_sky(self.PA,self.INC,self.THETA-90)
-		return self.PA,self.INC,self.XC,self.YC,self.VSYS,self.THETA,self.Rings,self.Vrot,self.Vrad,self.Vtan,self.best_vlos_2D_model,self.best_kin_2D_models,PA_bar_major,PA_bar_minor,self.aic_bic,self.std_errors
+		PA_bar_major = pa_bar_sky(self.PA,self.EPS,self.THETA)
+		PA_bar_minor = pa_bar_sky(self.PA,self.EPS,self.THETA-np.pi/2)
+		return self.PA,self.EPS,self.XC,self.YC,self.VSYS,self.THETA,self.Rings,self.Vrot,self.Vrad,self.Vtan,self.best_vlos_2D_model,self.best_kin_2D_models,PA_bar_major,PA_bar_minor,self.aic_bic,self.std_errors
 

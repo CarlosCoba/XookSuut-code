@@ -1,5 +1,6 @@
 import numpy as np
-from src.pixel_params import Rings
+from src.pixel_params import Rings,eps_2_inc
+
 import random
 
 
@@ -31,9 +32,9 @@ def ring_pixels(r_n,ring,delta):
 
 
 
-def resampling(velmap,error,rings,delta,pa,inc,xc,yc,pixel_scale,seed=10):		
+def resampling(velmap,error,rings,delta,pa,eps,xc,yc,pixel_scale,seed=10):		
 
-	pa,inc=pa*np.pi/180,inc*np.pi/180
+	pa,inc=pa*np.pi/180,eps_2_inc(eps)
 	[ny,nx] = velmap.shape
 	X = np.arange(0, nx, 1)
 	Y = np.arange(0, ny, 1)

@@ -19,7 +19,7 @@ class bidi_models:
 
 		self.vmode  =  vmode
 		self.shape = shape
-		self.pa, self.inc, self.x0, self.y0, self.Vsys =pa, inc, x0, y0, Vsys
+		self.pa, self.eps, self.x0, self.y0, self.Vsys =pa, inc, x0, y0, Vsys
 		self.rings_pos = ring_pos
 		self.ring_space = ring_space
 		self.nrings = len(self.rings_pos)
@@ -41,11 +41,11 @@ class bidi_models:
 		X = np.arange(0, self.nx, 1)
 		Y = np.arange(0, self.ny, 1)
 		self.XY_mesh = np.meshgrid(X,Y)
-		self.r_n = Rings(self.XY_mesh,self.pa*np.pi/180,self.inc*np.pi/180,self.x0,self.y0,pixel_scale)
+		self.r_n = Rings(self.XY_mesh,self.pa*np.pi/180,self.eps,self.x0,self.y0,pixel_scale)
 
 
 	def kinmdl_dataset(self, pars, V_i, xy_mesh, r_space, r_0 ):
-		modl = V_i*np.ones(len(xy_mesh[0]),)*weigths_w(xy_mesh,self.pa,self.inc,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
+		modl = V_i*np.ones(len(xy_mesh[0]),)*weigths_w(xy_mesh,self.pa,self.eps,self.x0,self.y0,r_0,r_space,pixel_scale=self.pixel_scale)
 		return modl
 
 

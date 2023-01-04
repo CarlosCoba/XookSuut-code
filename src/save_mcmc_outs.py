@@ -36,8 +36,8 @@ def marginal_vals(galaxy,vmode,chain_res,n_circ,n_noncirc,out,nlabels,mcmc_outs)
 		hdu.header['NAME0'] = "S_k"
 		hdu.header['NAME1'] = "C_k"  		
 
-	const0 = ["PA", "INC", "X0", "Y0", "VSYS"]
-	const1 = ["PA", "INC", "X0", "Y0", "VSYS","PHI_BAR"]
+	const0 = ["PA", "EPS", "X0", "Y0", "VSYS"]
+	const1 = ["PA", "EPS", "X0", "Y0", "VSYS","PHI_BAR"]
 	if "hrm" in vmode: const0[-1] = "C0"
 
 	if vmode != "bisymmetric":

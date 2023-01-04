@@ -1,16 +1,17 @@
 import numpy as np
 from scipy.interpolate import interp1d
 import matplotlib.pylab as plt
+from src.pixel_params import eps_2_inc
 np.warnings.filterwarnings('ignore')
 
 
-def model(vmode,nx,ny,pa,inc,Vsys,x0,y0,R,V,phi_b=0,pixel_scale=1):
+def model(vmode,nx,ny,pa,eps,Vsys,x0,y0,R,V,phi_b=0,pixel_scale=1):
 
 
 	Vrot, Vrad, Vtan = V
 
 	R = R/pixel_scale
-	PA,inc,phi_b=(pa)*np.pi/180,inc*np.pi/180,phi_b*np.pi/180
+	PA,inc=(pa)*np.pi/180,eps_2_inc(eps)
 
 	X = np.arange(0, nx, 1)
 	Y = np.arange(0, ny, 1)
@@ -22,7 +23,7 @@ def model(vmode,nx,ny,pa,inc,Vsys,x0,y0,R,V,phi_b=0,pixel_scale=1):
 
 
 
-	R_mesh = np.sqrt(X**2+(Y/np.cos(inc))**2)
+	R_mesh = np.sqrt(X**2+(Y/(1-eps))**2)
 	R_mesh = R_mesh
 
 
@@ -59,7 +60,7 @@ def model(vmode,nx,ny,pa,inc,Vsys,x0,y0,R,V,phi_b=0,pixel_scale=1):
 
 
 	cos_tetha = (- (x-x0)*np.sin(PA) + (y-y0)*np.cos(PA))/R_mesh
-	sin_tetha = (- (x-x0)*np.cos(PA) - (y-y0)*np.sin(PA))/(np.cos(inc)*R_mesh)
+	sin_tetha = (- (x-x0)*np.cos(PA) - (y-y0)*np.sin(PA))/((1-eps)*R_mesh)
 	theta = np.arctan(sin_tetha/cos_tetha)
 
 
