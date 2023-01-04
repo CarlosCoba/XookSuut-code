@@ -1,3 +1,0 @@
-[console_scripts]
-XookSuut = src.XookSuut_inputs:input_params
-
