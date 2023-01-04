@@ -5,7 +5,8 @@ Recover the different kinemaitc components from each kinematic model
 
 #Data:
 This example simulates a velocity map recovered from a second moment map such as those obtained from IFS-data, FP, HI etc.
-The pixel size of the image is 0.5 arcsec*pixel**-1
+Velocity map units are in those required by XS, i.e., km/s.
+The pixel size of the example file is 0.5 arcsec*pixel**-1
 No error map is passed 
 
  
@@ -20,9 +21,9 @@ The maximum radius will be placed up to 100 arcsec (on the disk plane).
 	- 5 Itereations will be used for evaluating the chisquare.
 		!NOTE At least 2 iteration is required to stibilize the disk-geometry.!
 
-- PA = 50, INC = 60, XC = 61, YC = 61 are the initial guess values for the disk geometry.
+- PA[deg] = 50, INC[deg] = 60, XC[pixels] = 61, YC[pixels] = 61 are the initial guess values for the disk geometry.
 	All parameters are allowed to vary during the fitting (i.e, VARY_PARAM = 1)
-- The systemic velocity guess is estimated around the kinematic centre (XC,YC)
+- The systemic velocity [km/s] guess is estimated around the kinematic centre (XC,YC)
 
 
 
@@ -64,7 +65,7 @@ XookSuut example velmap_example.fits.gz - 0.5 50 60 61 61 - 1 1 1 1 1 1.5 - 1.5,
 
 If you want to acces to the superior configuration of XookSuut you will have to pass a configuration file in the command line.
 By default XS ALWAYS uses the config file stored in ./src/xs_config.ini, where all variables are deactivated by default. 
-It is recomended that you copy the xs_config.ini file in your working directory and edit it according to your own preference.
+It is highly recomended that you copy the xs_config.ini file in your working directory and edit it according to your own preference.
 
 In the configuration file you can access to the MCMC analysis, bootstrap errors, and general parameters.
 
@@ -74,7 +75,8 @@ In the configuration file you can access to the MCMC analysis, bootstrap errors,
 
 In order to acces to the MCMC analysis, you will have to edit the configuration file. In this example we have copied the ./src/xs_config.ini file
 to this directory and renamed as xs_conf.example.ini.
-To perform the MCMC analysis we set mcmc_ana = True, and perform 100 steps. In real data you may want to run a couple of thousands.
+To perform the MCMC analysis we set `mcmc_ana = True`, `sampler = emcee`, `Nsteps = 1000`, in real data you may want to run a couple of thousands;
+we will choose a Gaussian posterior distribution `PropDist = G`, and discard 1/3 of the total steps `burnin = 0.333`.
 After saving the configuration file we pass it to XS in command line as follows:
 
 # For running a circular model using MCMC:
@@ -84,13 +86,18 @@ XookSuut example velmap_example.fits.gz - 0.5 50 60 61 61 - 1 1 1 1 1 1.5 - 1.5,
 In a terminal type the following
 XookSuut example velmap_example.fits.gz - 0.5 50 60 61 61 - 1 1 1 1 1 1.5 - 1.5,100 1/3. bisymmetric LM 5 20 xs_conf.example.ini
 
-
+Note 1:
+	We can run the same configurations with zeus by changing `sampler = zeus`.
+Note 2:
+	For using Nested sampling change to `sampler = dynesty`.	
 
 #####
 # XookSuut estimation of errors with bootstrap
 #####
-For this purpose you will have to change the value of "boots_ana" to True in the configuration file. In addition
-the user will have to specify the number of bootstrap iterations with the variable "Nboots".
-
+For this purpose you will have to change active the variable `boots_ana = True` in the configuration file. In addition
+the user will have to specify the number of bootstrap iterations with the variable `Nboots`.
+Note 1:
+	If bootstrap analysis will be used for errors computation make sure `mcmc_ana = False`. Otherwise XS will run the mcmc
+	analysis then perform bootstrap. 
 
 
