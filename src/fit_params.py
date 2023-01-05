@@ -125,16 +125,13 @@ class Least_square_fit:
 		outliers = config_general.getboolean('outliers', False)
 		if outliers: self.kwargs["loss"]="cauchy"
 
-		self.PA = config_const.getfloat('PA',self.pa0)
-		self.INC = config_const.getfloat('INC',False);
-		# Transform inc to ellipticity
-		self.EPS =  1-np.cos(self.INC*np.pi/180) if self.INC != False else self.eps0 
-		self.X0 = config_const.getfloat('X0',self.xc0)
-		self.Y0 = config_const.getfloat('Y0',self.yc0)
-		self.VSYS = config_const.getfloat('YC',self.vsys0)
-		self.PHI_BAR = config_const.getfloat('PHI_BAR',False)
-		self.PHI_BAR = self.PHI_BAR*np.pi/180. if self.PHI_BAR != False else self.phi_bar
-
+		# Rename to capital letters
+		self.PA = self.pa0
+		self.EPS =  self.eps0 
+		self.X0 = self.xc0
+		self.Y0 = self.yc0
+		self.VSYS = self.vsys0
+		self.PHI_BAR = self.phi_bar
 
 class Config_params(Least_square_fit):
 

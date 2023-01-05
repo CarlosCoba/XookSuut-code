@@ -155,10 +155,10 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 
 
 		if mcmc_sampler == "emcee":
-			pos0, prob, state = sampler.run_mcmc(pos, burnin)
 			print("running burnin period ..")
+			pos0, prob, state = sampler.run_mcmc(pos, burnin, progress=True)
 			sampler.reset()
-			print("running chains ..")
+			print("running post-burnin chains ..")
 			sampler.run_mcmc(pos0, steps, progress=True)
 
 		if mcmc_sampler == "zeus":
@@ -166,7 +166,7 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 			sampler.run_mcmc(pos, burnin)
 			pos0=sampler.get_last_sample()
 			sampler.reset()
-			print("running chains ..")
+			print("running post-burnin chains ..")
 			sampler.run_mcmc(pos0, steps)
 			sampler.summary # Print summary diagnostics
 

@@ -57,12 +57,12 @@ def trigonometric_weights(xy_mesh,pa,eps,x0,y0,phi_b,mask,vmode="radial",pixel_s
 
 		theta = np.arctan(sin/cos)
 		phi_b = phi_b
-		theta_b = theta - phi_b
+		phi_b = theta - phi_b
 
 
 		w_rot = np.sin(inc)*cos
-		w_rad = -np.sin(inc)*sin*np.sin(2*theta_b)
-		w_tan = -np.sin(inc)*cos*np.cos(2*theta_b)
+		w_rad = -np.sin(inc)*sin*np.sin(2*phi_b)
+		w_tan = -np.sin(inc)*cos*np.cos(2*phi_b)
 		return np.ravel(w_rot), np.ravel(w_rad), np.ravel(w_tan)
 
 
@@ -81,12 +81,12 @@ def trigonometric_weights(xy_mesh,pa,eps,x0,y0,phi_b,mask,vmode="radial",pixel_s
 
 
 
-def M_tab(pa,eps,x0,y0,theta_b,rings, delta,k, shape, vel_map, evel_map, pixel_scale=1,vmode = "radial", m_hrm = 1):
+def M_tab(pa,eps,x0,y0,phi_b,rings, delta,k, shape, vel_map, evel_map, pixel_scale=1,vmode = "radial", m_hrm = 1):
 
 	[ny,nx] = shape
 
 
-	pa, phi_b = pa*np.pi/180, theta_b*np.pi/180 
+	pa = pa*np.pi/180
 	X = np.arange(0, nx, 1)
 	Y = np.arange(0, ny, 1)
 	xy_mesh = np.meshgrid(X,Y)
