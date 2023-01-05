@@ -16,7 +16,7 @@ class set_likelihood:
 			self.kinmodel = kinmodel
 			self.theta_LM = theta_lm
 			self.sigma_int = int_scatter
-			self.pa, self.eps, self.x0, self.y0, self.phi_b = 0, 0, 0, 0, 45
+			self.pa, self.eps, self.x0, self.y0, self.phi_b = 0, 0, 0, 0, np.pi/4.
 			self.vrot = 0
 			self.vrad = self.vrot*0
 			self.vtan = self.vrot*0
@@ -237,10 +237,11 @@ class set_likelihood:
 					lp = 0 if -10<lnsigma2<10 else -1*np.inf
 
 			# search around a fixed distance of 10arcsec from (x0,y0)
+			rsearch = 10 #arcsec
 			r = np.sqrt((self.x0-x0)**2 + (self.y0-y0)**2 )*self.pixel_scale # r is in arcsec
 			eps_min, eps_max = 1-np.cos(25*np.pi/180),1-np.cos(80*np.pi/180)
 			# Uniform priors on parameters
-			if all([-1 <= np.cos(pa*np.pi/180) <= 1, eps_min < eps < eps_max, r < 10, \
+			if all([-1 <= np.cos(pa*np.pi/180) <= 1, eps_min < eps < eps_max, r < rsearch, \
 			-1  < np.cos(phi_b) < 1, mask_product, self.vsys*(1-300/self.vsys) < vsys < self.vsys*(1+300/self.vsys) ]):
 			# Gaussian priors ?
 				lp = 0 + lp

@@ -222,7 +222,14 @@ class Bisymmetric_model:
 		Vrot_, Vrad_, Vtan_ = Vk_
 
 		if self.save_chain:
-			header0 = {"0":["CHAIN_SHAPE","[[NWALKERS],[NSTEPS],[Vk,PA,INC,XC,YC,VSYS,PHI_BAR]]"],"1":["ACCEPT_F",acc_frac],"2":["STEPS", steps],"3":["WALKERS",nwalkers],"4":["BURNIN",burnin], "5":["DIM",ndim],"6":["VROT_DIMS",len(self.Vrot)],"7":["V2R_DIMS",n_noncirc],"8":["V2T_DIMS",n_noncirc]}
+			print("Saving chain ..")
+			[acc_frac, steps, thin, burnin, nwalkers, PropDist, ndim, max_act, theta0] = mcmc_outs[1:]
+			int_scatter = (self.config_mcmc).getboolean('sigma_int', False)
+			if int_scatter or PropDist == "C":
+				CHAIN_SHAPE = "[WALKERS],[STEPS],[Vk,PA,INC,XC,YC,VSYS,PHI_B,%s]"%("LNSIG2" if int_scatter and PropDist == "G" else "GAMMA2")
+			else:
+				CHAIN_SHAPE = "[WALKERS],[STEPS],[Vk,PA,INC,XC,YC,VSYS,PHI_B]"  
+			header0 = {"0":["CHAIN_SHAPE",CHAIN_SHAPE],"1":["ACCEPT_F",acc_frac],"2":["STEPS", steps],"3":["WALKERS",nwalkers],"4":["BURNIN",burnin], "5":["DIM",ndim],"6":["VROT_DIMS",len(self.Vrot)],"7":["V2R_DIMS",n_noncirc],"8":["V2T_DIMS",n_noncirc],"9":["PROPDIST",PropDist],"10":["THIN",thin], "11":["INT_DISP",int_scatter]}
 			array_2_fits(chain, self.outdir, self.galaxy, self.vmode, header0)
 
 

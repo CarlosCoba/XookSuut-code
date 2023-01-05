@@ -238,7 +238,14 @@ class Harmonic_model:
 
 		if self.save_chain:
 			print("Saving chain ..")
-			header0 = {"0":["CHAIN_SHAPE","[[NWALKERS],[NSTEPS],[Ck,Sk,PA,INC,XC,YC,C0]]"],"1":["ACCEPT_F",acc_frac],"2":["STEPS", steps],"3":["WALKERS",nwalkers],"4":["BURNIN",burnin], "5":["DIM",ndim],"6":["C1_DIMS",self.n_circ],"7":["S1_DIMS",self.n_noncirc]}
+			[acc_frac, steps, thin, burnin, nwalkers, PropDist, ndim, max_act, theta0] = mcmc_outs[1:]
+			int_scatter = (self.config_mcmc).getboolean('sigma_int', False)
+			if int_scatter or PropDist == "C":
+				CHAIN_SHAPE = "[WALKERS],[STEPS],[Ck,Sk,PA,INC,XC,YC,C0,%s]"%("LNSIG2" if int_scatter and PropDist == "G" else "GAMMA2")
+			else:
+				CHAIN_SHAPE = "[WALKERS],[STEPS],[Ck,Sk,PA,INC,XC,YC,C0]"  
+
+			header0 = {"0":["CHAIN_SHAPE",CHAIN_SHAPE],"1":["ACCEPT_F",acc_frac],"2":["STEPS", steps],"3":["WALKERS",nwalkers],"4":["BURNIN",burnin], "5":["DIM",ndim],"6":["C1_DIMS",self.n_circ],"7":["S1_DIMS",self.n_noncirc],"8":["PROPDIST",PropDist],"9":["THIN",thin], "10":["INT_DISP",int_scatter]}
 			vmode2 = self.vmode + "_%s"%self.m_hrm
 			array_2_fits(chain, self.outdir, self.galaxy, vmode2, header0)
 

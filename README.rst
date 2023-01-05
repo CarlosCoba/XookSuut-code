@@ -21,13 +21,18 @@ Description
 XookSuut or XS for short, is a python tool developed to model non-circular motions on 2D velocity maps,
 such as those obtained from Integral Field Spectroscopy data, i.e., stellar and ionized-gas velocity maps; even though  XS can run
 on any velocity map whose representation is in 2D maps.
-In order to derive the best kinematic model XS performs a Least-Squares analysis together with Bayesian inference methods to survey
-the propability space given by the Posterior distribution, or the volume space ocupied by the priors.
-XS adopts the most popular MCMC algorithms (emcee & zeus), and Dynamic Nested sampling (dynesty) to infer the best fit parameters.
+In order to derive the best kinematic model XS performs a Least-Squares analysis together with Bayesian inference methods to sample
+the propability space given by the posterior distribution (~likelihood*priors), i.e. MCMC, or by sampling the volume space occupied
+by the previous ones, that is, nested sampling.
+XS adopts the most popular MCMC algorithms (emcee & zeus), and dynamic nested sampling (dynesty) to infer the best fit parameters from the
+considered kinematic model.
 XS is able to model circular rotation models, axisymetric radial flows, bisymmetric flows, and a general harmonic decomposition of the LOSV.
-In order to derive the best set of parameters on each kinematic model XS uses all spaxels from the input velocity
-map; thus, large images could take time large CPU time for deriving the best model. 
-
+In order to derive the best set of parameters on each kinematic model XS uses most of the pixels from the input velocity
+map; thus, large dimension images could take time large CPU time for deriving the best model. 
+Note: In general Monte Carlo sampling can be computational more expensive than simple least-square analyses; therefore it is
+recomended to perform these tasks in multiple CPUs (adecuated within XS).
+The novelty of XS resides in its ability to compute kinematic models by sampling the posterior distribution, or from
+the so-called evidence.
 
 Dependencies
 ===========
@@ -62,7 +67,7 @@ pip uninstall XookSuut
 Use
 ===========
 
-XS is designed to run in command line, but you can easely set-up a python script .py so you can run it as a script.
+XS is designed to run in command line, although you can easely set-up a python script .py so you can run it as a script.
 This last could be very usefull in case you want to analyse several objects in parallel !
 Please read the run_example.txt file to see how to run XS.
 XS requires a 2D velocity map in (km/s) and optionally a map containing the uncertainties on the velocities.
@@ -99,10 +104,11 @@ Harmonic expasion with harmonic number m  = 2
 
 Referencing XookSuut
 =================
-
-If you are using XS in your work, please cite the XS release paper (), and dont forget citing DiskFit (Spekkens & Sellwood 2007) and RESWRI (Schoenmakers et al. 1997) since XS
-includes kinematic models from these two codes.
-XS relies on the following MCMC packages: emcee from (Foreman-Mackey+2013), Zeus (Karamanis+2021,2022); and Dynesty (Speagle 2020, Koposov +2022) for Nested sampling.
+ 
+If you are using XS in your work, please cite the XS release paper ().
+In addition to that, XS is influenced by the DiskFit (Spekkens & Sellwood 2007) and RESWRI (Schoenmakers et al. 1997) packages 
+since it includes kinematic models from these two codes, so don't forget to mention them in your work.
+XS also relies on the following MCMC packages, emcee from (Foreman-Mackey+2013) and Zeus (Karamanis+2021,2022); and Dynesty (Speagle 2020, Koposov +2022) for nested sampling.
 Also, if you use the XS colormap (red-black-blue) in a different context, I would appreciate it, if you include XS in the acknowledgment section.
 
 
