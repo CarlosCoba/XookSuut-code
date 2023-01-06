@@ -23,16 +23,15 @@ such as those obtained from Integral Field Spectroscopy data, i.e., stellar and 
 on any velocity map whose representation is in 2D maps.
 In order to derive the best kinematic model XS performs a Least-Squares analysis together with Bayesian inference methods to sample
 the propability space given by the posterior distribution (~likelihood*priors), i.e. MCMC, or by sampling the volume space occupied
-by the previous ones, that is, nested sampling.
-XS adopts the most popular MCMC algorithms (emcee & zeus), and dynamic nested sampling (dynesty) to infer the best fit parameters from the
+by the priors, i.e., nested sampling.
+XS adopts the most popular Monte Carlo Chain Marcov (MCMC) packages emcee & zeus, and dynesty for dynamic nested sampling, to infer the best fit parameters from the
 considered kinematic model.
-XS is able to model circular rotation models, axisymetric radial flows, bisymmetric flows, and a general harmonic decomposition of the LOSV.
-In order to derive the best set of parameters on each kinematic model XS uses most of the pixels from the input velocity
+XS is able to model circular rotation models, axisymmetric radial flows, bisymmetric flows, and a general harmonic decomposition of the LOSV.
+To derive the best set of parameters on each kinematic model XS uses most of the pixels from the input velocity
 map; thus, large dimension images could take time large CPU time for deriving the best model. 
-Note: In general Monte Carlo sampling can be computational more expensive than simple least-square analyses; therefore it is
-recomended to perform these tasks in multiple CPUs (adecuated within XS).
-The novelty of XS resides in its ability to compute kinematic models by sampling the posterior distribution, or from
-the so-called evidence.
+Note: In general Monte Carlo sampling can be computational more expensive than simple Least-Square analyses; therefore it is
+recomended to perform this analysis using multiple CPUs (adecuated within XS).
+The novelty of XS resides in its ability to compute kinematic models by sampling the posterior distribution, or by intrating the so-called evidence.
 
 Dependencies
 ===========
@@ -88,14 +87,17 @@ Radial flow model:
 Bisymmetric model:
 |bis|
 
-Corner plot of constant parameters (i.e, PA, INC, XC, YC, PA_BAR):
-|corner|
+Corner plot of constant parameters (i.e, PA, INC, XC, YC, VSYS, PA_BAR):
+|corner_const|
 
-V2r chain. 
-|chain_rad|
+Corner plot for the circular velocities (vt):
+|corner_vt|
 
-V2t chain
-|chain_tan|
+Corner plot for the bisymmetric component v2r:
+|corner_v2r|
+
+Corner plot for the bisymmetric component v2t:
+|corner_v2t|
 
 Harmonic expasion with harmonic number m  = 2
 |hrm|
@@ -131,15 +133,19 @@ Also, if you use the XS colormap (red-black-blue) in a different context, I woul
     :scale: 20 %
     :target: https://github.com/CarlosCoba/XookSuut-code
 
-.. |corner| image:: corner.bisymmetric_model.example.png
+.. |corner_const| image:: multicorner.png
     :scale: 10 %
     :target: https://github.com/CarlosCoba/XookSuut-code
 
-.. |chain_rad| image:: chain_progress.rad.bisymmetric_model.example.png
+.. |corner_vt| image:: multicorner_vt.png
     :scale: 20 %
     :target: https://github.com/CarlosCoba/XookSuut-code
 
-.. |chain_tan| image:: chain_progress.tan.bisymmetric_model.example.png
+.. |corner_v2r| image:: multicorner_v2r.png
+    :scale: 20 %
+    :target: https://github.com/CarlosCoba/XookSuut-code
+
+.. |corner_v2t| image:: multicorner_v2t.png
     :scale: 20 %
     :target: https://github.com/CarlosCoba/XookSuut-code
 
