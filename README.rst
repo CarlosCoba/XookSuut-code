@@ -132,7 +132,7 @@ Also, if you use the XS colormap (red-black-blue) in a different context, I woul
     :target: https://github.com/CarlosCoba/XookSuut-code
 
 
-.. |bis| image:: kin_bisymmetric_model_paper.png
+.. |bis| image:: kin_bisymmetric_model_paper-dynesty.png
     :scale: 20 %
     :target: https://github.com/CarlosCoba/XookSuut-code
 
