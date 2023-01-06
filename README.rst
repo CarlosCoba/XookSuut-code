@@ -87,16 +87,19 @@ Radial flow model:
 Bisymmetric model:
 |bis|
 
-Corner plot of constant parameters (i.e, PA, INC, XC, YC, VSYS, PA_BAR):
+Following are shown the corner plots, or marginalization plots for the different parameters describing the 
+previous bisymmetric model.
+
+Corner plot showing the constant parameters (i.e, PA, INC, XC, YC, VSYS, PA_BAR, LNSIGMA2):
 |corner_const|
 
-Corner plot for the circular velocities (vt):
+Corner plot for the circular velocities vt (km/s):
 |corner_vt|
 
-Corner plot for the bisymmetric component v2r:
+Corner plot for the bisymmetric component v2r (km/s):
 |corner_v2r|
 
-Corner plot for the bisymmetric component v2t:
+Corner plot for the bisymmetric component v2t (km/s):
 |corner_v2t|
 
 Harmonic expasion with harmonic number m  = 2
