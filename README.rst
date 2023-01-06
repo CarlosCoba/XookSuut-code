@@ -122,17 +122,17 @@ Also, if you use the XS colormap (red-black-blue) in a different context, I woul
     :target: https://github.com/CarlosCoba/XookSuut-code
 
 
-.. |circ| image:: kin_circular_model_example.png
+.. |circ| image:: kin_circular_model_paper.png
     :scale: 20 %
     :target: https://github.com/CarlosCoba/XookSuut-code
 
 
-.. |rad| image:: kin_radial_model_example.png
+.. |rad| image:: kin_radial_model_paper.png
     :scale: 20 %
     :target: https://github.com/CarlosCoba/XookSuut-code
 
 
-.. |bis| image:: kin_bisymmetric_model_example.png
+.. |bis| image:: kin_bisymmetric_model_paper.png
     :scale: 20 %
     :target: https://github.com/CarlosCoba/XookSuut-code
 
@@ -152,7 +152,7 @@ Also, if you use the XS colormap (red-black-blue) in a different context, I woul
     :scale: 20 %
     :target: https://github.com/CarlosCoba/XookSuut-code
 
-.. |hrm| image:: kin_hrm_2_model_example.png
+.. |hrm| image:: kin_hrm_2_model_paper.png
     :scale: 20 %
     :target: https://github.com/CarlosCoba/XookSuut-code
 
