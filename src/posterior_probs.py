@@ -7,7 +7,7 @@ from scipy.stats import truncnorm
 class set_likelihood:
 
 
-	def __init__(self, vmode, shape, pdf, n_circ, n_noncirc, kinmodel, theta_lm, int_scatter, pixel_scale, m_hrm, priors):
+	def __init__(self, vmode, shape, pdf, n_circ, n_noncirc, kinmodel, theta_lm, int_scatter, pixel_scale, m_hrm, priors, mcmc_sampler):
 			self.vmode = vmode
 			self.ny, self.nx = shape
 			self.pdf = pdf
@@ -24,6 +24,7 @@ class set_likelihood:
 			self.pixel_scale = pixel_scale
 			self.m_hrm = m_hrm
 			self.priorvol = priors
+			self.mcmc_sampler = mcmc_sampler
 
 			model = (self.kinmodel).interp_model
 			self.mdl_LM, obs, error = model(theta_lm)
@@ -241,8 +242,9 @@ class set_likelihood:
 			r = np.sqrt((self.x0-x0)**2 + (self.y0-y0)**2 )*self.pixel_scale # r is in arcsec
 			eps_min, eps_max = 1-np.cos(25*np.pi/180),1-np.cos(80*np.pi/180)
 			# Uniform priors on parameters
+			# note for emcee and zeus: phi_bar goes from (-1,1)
 			if all([-1 <= np.cos(pa*np.pi/180) <= 1, eps_min < eps < eps_max, r < rsearch, \
-			-1  < np.cos(phi_b) < 1, mask_product, self.vsys*(1-300/self.vsys) < vsys < self.vsys*(1+300/self.vsys) ]):
+			-1  < phi_b < 1, mask_product, self.vsys*(1-300/self.vsys) < vsys < self.vsys*(1+300/self.vsys) ]):
 			# Gaussian priors ?
 				lp = 0 + lp
 				lp += self.g_priors(self.x0,x0,5)
@@ -284,6 +286,8 @@ class set_likelihood:
 				else:
 					theta_mdls = theta
 
+			# For emcee and zeus: Transform -1<phi_b<1 to radians
+			if self.mcmc_sampler in ['emcee','zeus'] and self.vmode == 'bisymmetric': theta_mdls[-1] = np.arccos(theta_mdls[-1])
 			""" The model evaluation depends only on the parameters"""
 			model = (self.kinmodel).interp_model
 			mdl, obs, error = model(theta_mdls)

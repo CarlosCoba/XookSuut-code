@@ -199,7 +199,10 @@ class Bisymmetric_model:
 		Vtan_nonzero = self.Vtan[non_zero]
 		n_noncirc = len(Vrad_nonzero)
 
-		theta0 = np.asarray([self.Vrot, Vrad_nonzero, Vtan_nonzero, self.PA, self.EPS, self.XC, self.YC, self.VSYS, self.THETA])
+		mcmc_sampler = (self.config_mcmc).get('mcmc_sampler')
+		# transform phi_b for emcee and zeus analysis
+		phi_b_mcmc = np.cos(self.THETA) if mcmc_sampler in ["emcee","zeus"] else self.THETA 
+		theta0 = np.asarray([self.Vrot, Vrad_nonzero, Vtan_nonzero, self.PA, self.EPS, self.XC, self.YC, self.VSYS, phi_b_mcmc])
 		n_circ = len(self.Vrot)
 		#Covariance of the proposal distribution
 		sigmas = np.array([np.ones(n_circ),np.ones(n_noncirc),np.ones(n_noncirc),1,1e-3,1,1,1,1])*1e-2
@@ -210,7 +213,7 @@ class Bisymmetric_model:
 
 		
 		data = [self.galaxy, self.vel, self.evel, theta0]
-		mcmc_config = [self.config_mcmc,sigmas] 
+		mcmc_config = [self.config_mcmc,sigmas]
 		model_params = [self.vmode, self.Rings, self.ring_space, self.pixel_scale, self.r_bar_min, self.r_bar_max]
 
 		#MCMC RESULTS

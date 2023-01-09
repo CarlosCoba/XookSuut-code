@@ -75,7 +75,7 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 
 	kinmodel = KinModel( vel_map, evel_map, theta_, vmode, rings_pos, ring_space, pixel_scale, inner_interp, PropDist, m_hrm, n_circ, n_noncirc, shape, config_psf)
 	#log_posterior = set_likelihood(vmode, shape, PropDist, n_circ, n_noncirc, kinmodel)
-	set_L = set_likelihood(vmode, shape, PropDist, n_circ, n_noncirc, kinmodel,theta_,int_scatter, pixel_scale, m_hrm, priors_dynesty)
+	set_L = set_likelihood(vmode, shape, PropDist, n_circ, n_noncirc, kinmodel,theta_,int_scatter, pixel_scale, m_hrm, priors_dynesty, mcmc_sampler)
 	log_likelihood = set_L.ln_likelihood
 	prior_transform = set_L.prior_transform
 	log_posterior = set_L.ln_posterior
