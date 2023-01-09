@@ -87,8 +87,8 @@ Radial flow model:
 Bisymmetric model:
 |bis|
 
-Following are shown the corner plots, or the individual marginalization distributons for the different parameters describing the 
-previous bisymmetric model. This particular model contains 40 independent variables !.
+Following are shown the corner plots, which are just the marginalized posterior distributons for each parameter describing the 
+previous bisymmetric model. This particular model comprises of 40 independent variables !.
 
 Corner plot showing the constant parameters (i.e, PA, INC, XC, YC, VSYS, PA_BAR, LNSIGMA2):
 |corner_const|

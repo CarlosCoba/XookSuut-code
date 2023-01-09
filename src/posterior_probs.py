@@ -232,17 +232,17 @@ class set_likelihood:
 			if self.pdf == "C":
 				lnsigma2 =  theta[-1]
 				lp = 0 if 0<lnsigma2<100 else -1*np.inf
-			if self.pdf == "G":
-				if self.sigma_int:
-					lnsigma2 =  theta[-1]
-					lp = 0 if -10<lnsigma2<10 else -1*np.inf
+			if self.pdf == "G" and self.sigma_int:
+				lnsigma2 =  theta[-1]
+				lp = 0 if -10<lnsigma2<10 else -1*np.inf
 
 			# search around a fixed distance of 10arcsec from (x0,y0)
 			rsearch = 10 #arcsec
 			r = np.sqrt((self.x0-x0)**2 + (self.y0-y0)**2 )*self.pixel_scale # r is in arcsec
 			eps_min, eps_max = 1-np.cos(25*np.pi/180),1-np.cos(80*np.pi/180)
 			# Uniform priors on parameters
-			# note for emcee and zeus: phi_bar goes from (-1,1)
+			# note 1: for emcee and zeus: phi_bar goes from (-1,1) so that its arccos value goes from (0,2*np.pi)
+			# note 2: vsys is searched around +-300 km/s from guess value.
 			if all([-1 <= np.cos(pa*np.pi/180) <= 1, eps_min < eps < eps_max, r < rsearch, \
 			-1  < phi_b < 1, mask_product, self.vsys*(1-300/self.vsys) < vsys < self.vsys*(1+300/self.vsys) ]):
 			# Gaussian priors ?
@@ -276,17 +276,15 @@ class set_likelihood:
 
 
 	def ln_likelihood(self, theta):
-			if self.pdf == "C":
+
+			# theta_mdls includes only parameters describing the kinematic models (i.e., not lnsigma2 nor gamma) :
+			if self.pdf == "C" or self.sigma_int:
 				beta =  theta[-1]
 				theta_mdls = theta[:-1]
-			if self.pdf == "G":
-				if self.sigma_int:
-					beta =  theta[-1]
-					theta_mdls = theta[:-1]
-				else:
-					theta_mdls = theta
+			if self.pdf == "G" and not self.sigma_int:
+				theta_mdls = theta
 
-			# For emcee and zeus: Transform -1<phi_b<1 to radians
+			# For emcee and zeus: Need to transform -1<phi_b<1 to radians for model evaluation
 			if self.mcmc_sampler in ['emcee','zeus'] and self.vmode == 'bisymmetric': theta_mdls[-1] = np.arccos(theta_mdls[-1])
 			""" The model evaluation depends only on the parameters"""
 			model = (self.kinmodel).interp_model

@@ -16,7 +16,7 @@ from src.dynesty_plots import dplots
 import matplotlib.pylab as plt
 
 
-
+# chain shape: (nsteps, nwalkers, ndim)
 def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_interp, n_circ, n_noncirc, m_hrm = 0):
 
 	galaxy, vel_map, evel_map, theta0  = data
@@ -92,6 +92,7 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 	pnrg = np.random.RandomState(seed0)
 	for k in range(Nwalkers):
 		theta_prop = pnrg.multivariate_normal(theta_, cov)
+		#theta_prop = pnrg.normal(theta_, 0.001)
 		pos[k] =  theta_prop
 
 	#"""
@@ -104,7 +105,7 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 	]
 
 	# Tune zeus moves
-	#moves_z = zeus.moves.GlobalMove()
+	moves_z = [(zeus.moves.DifferentialMove(), 0.1), (zeus.moves.GaussianMove(), 0.9)]
 	print("sampler:\t %s"%mcmc_sampler)
 	if mcmc_sampler in ["emcee","zeus"]:
 		print("N_steps:\t %s"%Nsteps)
@@ -117,12 +118,11 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 		print("############################")
 
 	with Pool(Ncpus) as pool:
-
 		if Parallel :
 			if mcmc_sampler == "emcee":
 				sampler = emcee.EnsembleSampler(Nwalkers, ndim, log_posterior, moves = moves, pool = pool )
 			if mcmc_sampler == "zeus":
-				sampler = zeus.EnsembleSampler(Nwalkers, ndim, log_posterior, pool = pool, light_mode = True)
+				sampler = zeus.EnsembleSampler(Nwalkers, ndim, log_posterior, light_mode=True, pool = pool )
 			if mcmc_sampler == "dynesty":
 				priors = "Truncated-gaussians" if priors_dynesty else "Uniform"
 				print("Dynesty parameters")
@@ -196,6 +196,12 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 
 	if acc_frac < 0.1:
 		print("XookSuut: you got a very low acceptance rate ! ")
+
+	## if sampler is emcee or zeus we need to transform -1<phi_b<1 --> radians
+	if all( [ (PropDist == "C" or int_scatter), vmode == "bisymmetric", mcmc_sampler in ["emcee","zeus"] ] ):
+		chain[:,:,-2] = np.arccos(chain[:,:,-2])
+	if all( [ (PropDist == "G" and not int_scatter), vmode == "bisymmetric", mcmc_sampler in ["emcee","zeus"] ] ):
+		chain[:,:,-1] = np.arccos(chain[:,:,-1])
 
 	return chain, acc_frac, steps, thin, burnin, Nwalkers, PropDist, ndim, max_act, theta0
 
