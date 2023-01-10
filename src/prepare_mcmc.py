@@ -66,7 +66,7 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 	if PropDist == "G":
 		if not int_scatter :
 			theta_, sigmas = theta_[:-1],sigmas[:-1]
-			theta0 = theta0[:-1]
+			#theta0 = theta0[:-1]
 
 	if vmode == "bisymmetric":
 		if ((PropDist == "G") and (int_scatter!=True)): bound_pabar = -1 
@@ -197,11 +197,11 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 	if acc_frac < 0.1:
 		print("XookSuut: you got a very low acceptance rate ! ")
 
-	## if sampler is emcee or zeus we need to transform -1<phi_b<1 --> radians
+	## NOTE ! if sampler is emcee or zeus we need to transform -1<phi_b<1 --> radians
 	if all( [ (PropDist == "C" or int_scatter), vmode == "bisymmetric", mcmc_sampler in ["emcee","zeus"] ] ):
-		chain[:,:,-2] = np.arccos(chain[:,:,-2])
+		chain[:,:,-2] = np.arccos(chain[:,:,-2]); theta0[-2] = np.arccos(theta0[-2])
 	if all( [ (PropDist == "G" and not int_scatter), vmode == "bisymmetric", mcmc_sampler in ["emcee","zeus"] ] ):
-		chain[:,:,-1] = np.arccos(chain[:,:,-1])
+		chain[:,:,-1] = np.arccos(chain[:,:,-1]); theta0[-2] = np.arccos(theta0[-2])
 
 	return chain, acc_frac, steps, thin, burnin, Nwalkers, PropDist, ndim, max_act, theta0
 
