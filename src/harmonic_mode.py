@@ -2,10 +2,12 @@ import numpy as np
 import time
 from src.eval_tab_model import tab_mod_vels
 from src.fit_params import Fit_kin_mdls as fit
+from src.fit_params_boots import Fit_kin_mdls as fit_boots
 from src.resample import resampling
 from src.prepare_mcmc import Metropolis as MP
 from src.chain_hrm import chain_res_mcmc
 from src.tools_fits import array_2_fits
+from src.create_2D_vlos_model import best_2d_model
 import os
 
 class Harmonic_model:
@@ -90,7 +92,7 @@ class Harmonic_model:
 		"""
 
 
-	def lsq(self):
+	def lsq(self, fit_routine=fit):
 
 		c1_tab_it, c3_tab_it, s1_tab_it, s3_tab_it = np.zeros(self.nrings,), np.zeros(self.nrings,), np.zeros(self.nrings,),np.zeros(self.nrings,)
 		for it in np.arange(self.n_it):
@@ -146,7 +148,7 @@ class Harmonic_model:
 
 		self.frac_pixel = 0
 		n_boot = self.n_boot
-		self.n_it = 1
+		self.n_it,self.n_it0 = 1, 1
 		runs = np.arange(0,self.n_boot)
 	
 		if self.parallel: runs = [individual_run]
@@ -165,7 +167,7 @@ class Harmonic_model:
 			new_vel_map = np.nansum(np.dstack((new_vel*mdl_zero,~mdl_zero*self.vel_copy)),2) ; new_vel_map[new_vel_map==0]=np.nan
 			self.vel = new_vel_map
 
-			lsq = self.lsq()
+			lsq = self.lsq(fit_boots)
 			self.bootstrap_contstant_prms[k,:] = np.array ([ self.pa0, self.eps0, self.x0, self.y0, self.vsys0] )
 			self.bootstrap_kin_c[k,:] = np.concatenate(self.c_k)
 			self.bootstrap_kin_s[k,:] = np.concatenate(self.s_k)
@@ -268,6 +270,12 @@ class Harmonic_model:
 				mean_c, mean_s = np.nanmean(self.bootstrap_kin_c,axis=0),np.nanmean(self.bootstrap_kin_s,axis=0)
 				self.PA,self.EPS,self.XC,self.YC,self.VSYS = np.nanmean(self.bootstrap_contstant_prms,axis=0)
 				self.C_k, self.S_k = np.array_split(mean_c, self.m_hrm), np.array_split(mean_s, self.m_hrm)
+				vk = np.concatenate((self.C_k, self.S_k), axis=0)
+		 		# create 2D vlos model
+				create_2D = best_2d_model(self.vmode, (self.vel).shape, vk, self.PA, self.EPS, self.XC,
+				self.YC, self.VSYS, self.Rings, self.ring_space, self.pixel_scale, self.inner_interp , m_hrm = self.m_hrm)
+				self.best_vlos_2D_model = create_2D.model2D()
+
 
 		#emcee
 		if self.mcmc_ana: 

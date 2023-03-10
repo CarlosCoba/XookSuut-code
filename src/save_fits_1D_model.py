@@ -8,7 +8,7 @@ def save_model(galaxy,vmode,R,Vrot,Vrad,Vtan,PA,EPS,XC,YC,VSYS,THETA,PA_BAR_MAJO
 	n = len(Vrot)
 	e_PA,e_EPS,e_XC,e_YC,e_Vsys,e_theta  = errors_fit[1]
 	e_Vrot,e_Vrad,e_Vtan  = errors_fit[0]
-	INC, e_INC = eps_2_inc(EPS)*180/np.pi, eps_2_inc(e_EPS)*180/np.pi
+	INC, e_INC = eps_2_inc(EPS)*180/np.pi, 0.5*abs(eps_2_inc(EPS+e_EPS)-eps_2_inc(EPS-e_EPS))*180/np.pi
 	N_free, N_nvarys, N_data, bic, aic, redchi = bic_aic
 
 

@@ -34,13 +34,13 @@ def ring_pixels(r_n,ring,delta):
 
 def resampling(velmap,error,rings,delta,pa,eps,xc,yc,pixel_scale,seed=10):		
 
-	pa,inc=pa*np.pi/180,eps_2_inc(eps)
+	pa = pa*np.pi/180
 	[ny,nx] = velmap.shape
 	X = np.arange(0, nx, 1)
 	Y = np.arange(0, ny, 1)
 	XY_mesh = np.meshgrid(X,Y)
 
-	r_n = Rings(XY_mesh,pa,inc,xc,yc,pixel_scale)
+	r_n = Rings(XY_mesh,pa,eps,xc,yc,pixel_scale)
 	velmap_c = np.copy(velmap)
 
 	pnrg = np.random.RandomState(seed)

@@ -186,8 +186,10 @@ class KinModel :
 				v_new = v_new_1 + v_new_2
 				self.interp_model_r[mask_inner] = v_new
 
-			self.interp_model_r[self.interp_model_r == 0]  = np.nan
-			self.interp_model_r = self.interp_model_r + self.Vsys
+			#self.interp_model_r[self.interp_model_r == 0]  = np.nan
+			#self.interp_model_r = self.interp_model_r + self.Vsys
+			mask = self.interp_model_r == 0
+			self.interp_model_r[~mask]  = self.interp_model_r[~mask] + self.Vsys
 
 			if self.convolve:
 				conv_mdl = deconv_2D(self.interp_model_r, psf=self.psf_fwhm/2.354, kernel_size=5, pixel_scale=self.pixel_scale)
@@ -200,6 +202,7 @@ class KinModel :
 			residual = self.vel_map - self.interp_model_r
 			mask_ones = residual/residual
 			mask_finite = np.isfinite(mask_ones)
+			mask_finite = mask_finite*(~mask)
 
 			mdl = self.interp_model_r[mask_finite]
 			obs = self.vel_map[mask_finite]

@@ -3,10 +3,12 @@ import time
 from src.eval_tab_model import tab_mod_vels
 from src.phi_bar_sky import pa_bar_sky
 from src.fit_params import Fit_kin_mdls as fit
+from src.fit_params_boots import Fit_kin_mdls as fit_boots
 from src.resample import resampling
 from src.prepare_mcmc import Metropolis as MP
 from src.chain_bis import chain_res_mcmc
 from src.tools_fits import array_2_fits
+from src.create_2D_vlos_model import best_2d_model
 import os
 
 
@@ -91,7 +93,7 @@ class Bisymmetric_model:
 
 
 
-	def lsq(self):
+	def lsq(self, fit_routine=fit):
 
 		vrad_it, vtan_it = np.zeros(100,), np.zeros(100,)
 		vrot_tab_it, vrad_tab_it, vtan_tab_it = np.zeros(self.nrings,), np.zeros(self.nrings,), np.zeros(self.nrings,)
@@ -101,15 +103,19 @@ class Bisymmetric_model:
 			if int(self.pa0) == 360: self.pa0 = 0
 			if int(self.pa0) == 0: self.pa0 = 1
 			if int(self.pa0) == 180: self.pa0 = 181
+			# In case the bar p.a. is aligned to the major axis, then try
+			# to change it to modify the analytic solution of v2r and v2t
+			phi_b = self.theta_b
+			if abs(phi_b*180/np.pi)<5:phi_b = np.pi/4.
 
 			# Here we create the tabulated model			
-			vrot_tab, vrad_tab, vtan_tab, R_pos = tab_mod_vels(self.rings,self.vel, self.evel, self.pa0,self.eps0,self.x0,self.y0,self.vsys0,self.theta_b,self.delta,self.pixel_scale,self.vmode,self.shape,self.frac_pixel,self.r_bar_min, self.r_bar_max)
+			vrot_tab, vrad_tab, vtan_tab, R_pos = tab_mod_vels(self.rings,self.vel, self.evel, self.pa0,self.eps0,self.x0,self.y0,self.vsys0,phi_b,self.delta,self.pixel_scale,self.vmode,self.shape,self.frac_pixel,self.r_bar_min, self.r_bar_max)
 			vrot_tab[abs(vrot_tab) > 400] = np.nanmedian(vrot_tab) 
-			guess = [vrot_tab,vrad_tab,vtan_tab,self.pa0,self.eps0,self.x0,self.y0,self.vsys0,self.theta_b]
+			guess = [vrot_tab,vrad_tab,vtan_tab,self.pa0,self.eps0,self.x0,self.y0,self.vsys0,phi_b]
 			if it == 0: first_guess_it = guess
 
 			# Minimization
-			fitting = fit(self.vel, self.evel, guess, self.vary, self.vmode, self.config, R_pos, self.ring_space, self.fitmethod, self.e_ISM, self.pixel_scale, self.frac_pixel, self.inner_interp,N_it=self.n_it0)
+			fitting = fit_routine(self.vel, self.evel, guess, self.vary, self.vmode, self.config, R_pos, self.ring_space, self.fitmethod, self.e_ISM, self.pixel_scale, self.frac_pixel, self.inner_interp,N_it=self.n_it0)
 			self.v_2D_mdl, kin_2D_modls, Vk , self.pa0, self.eps0, self.x0, self.y0, self.vsys0, self.theta_b, out_data, Errors, true_rings = fitting.results()
 			xi_sq = out_data[-1]
 			#Unpack velocities 
@@ -147,7 +153,7 @@ class Bisymmetric_model:
 		print("starting bootstrap analysis ..")
 
 		self.frac_pixel = 0
-		self.n_it = 1
+		self.n_it,self.n_it0 = 1, 1
 		runs = np.arange(0,self.n_boot)
 		if self.parallel: runs = [individual_run]
 		for k in runs:
@@ -164,7 +170,7 @@ class Bisymmetric_model:
 			# sum two arrays containing nans
 			new_vel_map = np.nansum(np.dstack((new_vel*mdl_zero,~mdl_zero*self.vel_copy)),2) ; new_vel_map[new_vel_map==0]=np.nan
 			self.vel = new_vel_map
-			lsq = self.lsq()
+			lsq = self.lsq(fit_boots)
 			self.bootstrap_contstant_prms[k,:] = np.array ([ self.pa0, self.eps0, self.x0, self.y0, self.vsys0, self.theta_b ] )
 			self.bootstrap_kin[k,:] = np.concatenate([self.vrot,self.vrad,self.vtan])
 			if self.parallel: return([[ self.pa0, self.eps0, self.x0, self.y0, self.vsys0, self.theta_b ], np.concatenate([self.vrot,self.vrad,self.vtan])])
@@ -255,6 +261,10 @@ class Bisymmetric_model:
 				mean_kin = np.nanmean(self.bootstrap_kin,axis=0)
 				self.PA,self.EPS,self.XC,self.YC,self.VSYS,self.THETA = np.nanmean(self.bootstrap_contstant_prms,axis=0)
 				self.Vrot, self.Vrad, self.Vtan = mean_kin[0:self.n_circ],mean_kin[self.n_circ:2*self.n_circ],mean_kin[2*self.n_circ:]
+		 		# create 2D vlos model
+				create_2D = best_2d_model(self.vmode, (self.vel).shape, [self.Vrot,self.Vrad,self.Vtan], self.PA, self.EPS, self.XC,
+				self.YC, self.VSYS, self.Rings, self.ring_space, self.pixel_scale, self.inner_interp , phi_b = self.THETA)
+				self.best_vlos_2D_model = create_2D.model2D()
 
 		#emcee
 		if self.mcmc_ana:

@@ -164,7 +164,7 @@ class Run_models:
 		self.PHI_BAR_deg = self.PHI_BAR*180/np.pi
 		self.redchi = self.bic_aic[-1] 
 
-
+		self.vlos_2D_mdl[self.vlos_2D_mdl==0]=np.nan
 
 
 class XS_out(Run_models):

@@ -192,6 +192,7 @@ def chain_res_mcmc(galaxy, vmode, theta, mcmc_outs, shape, rings_pos, ring_space
 	plot_datapoints=False,
 	labelpad = 0.3,
 	max_n_ticks=3,
+	levels=(1 - np.exp(-0.5),1 - np.exp(-4/2.)),
 	range = range0,# include 5sigma range for each variable
 	contour_kwargs = dict(linewidths = 0.5))
 

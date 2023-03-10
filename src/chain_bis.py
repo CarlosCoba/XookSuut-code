@@ -34,7 +34,6 @@ def chain_res_mcmc(galaxy, vmode, theta, mcmc_outs, shape, rings_pos, ring_space
 	[nwalkers, steps,ndim]=chain.shape;
 	# These are the number of parameters from the kinematic models
 	n_params_mdl = n_circ + 2*n_noncirc + 6
-	
 	labels_const = ["$\mathrm{\phi^{\prime}}~(^\circ)$", "$i~(^\circ)$", "$\mathrm{x_0}~(pix)$", "$\mathrm{y_0}~(pix)$", "$\mathrm{V_{sys}~(km/s)}$","$\\phi_{\mathrm{bar}}~(^\circ)$"]
 	theta_flat = np.hstack(theta.flatten())
 	pa0,eps0,x0,y0,vsys0,phi0 = theta_flat[m:m+6]
@@ -167,6 +166,7 @@ def chain_res_mcmc(galaxy, vmode, theta, mcmc_outs, shape, rings_pos, ring_space
 	plot_datapoints=False,
 	labelpad = 0.3,
 	max_n_ticks=3,
+	levels=(1 - np.exp(-0.5),1 - np.exp(-4/2.)),
 	range = range0,# include 5sigma range for each variable
 	contour_kwargs = dict(linewidths = 0.5))
 

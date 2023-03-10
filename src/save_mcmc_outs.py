@@ -12,7 +12,7 @@ def marginal_vals(galaxy,vmode,chain_res,n_circ,n_noncirc,out,nlabels,mcmc_outs)
 	hdu.header['PROPDIST'] = "Gaussian" if PropDist == "G" else "Cauchy"
 	hdu.header['STEPS'] = steps	
 	hdu.header['ACC_FRAC'] = round(acc_frac,2)	
-	hdu.header['THIN'] = steps	
+	hdu.header['THIN'] = thin	
 	hdu.header['NWALKERS'] = Nwalkers	
 	hdu.header['NDIM'] = ndim	
 	hdu.header['ACT'] = int(act)	

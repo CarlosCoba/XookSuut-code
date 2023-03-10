@@ -2,10 +2,12 @@ import numpy as np
 import time
 from src.eval_tab_model import tab_mod_vels
 from src.fit_params import Fit_kin_mdls as fit
+from src.fit_params_boots import Fit_kin_mdls as fit_boots
 from src.resample import resampling
 from src.prepare_mcmc import Metropolis as MP
 from src.chain_circ import chain_res_mcmc
 from src.tools_fits import array_2_fits
+from src.create_2D_vlos_model import best_2d_model
 import os
 import matplotlib.pylab as plt
 
@@ -90,7 +92,7 @@ class Circular_model:
 
 
 
-	def lsq(self):
+	def lsq(self,fit_routine=fit):
 
 		vrad_it, vtan_it = np.zeros(100,), np.zeros(100,)
 		vrot_tab_it, vrad_tab_it, vtan_tab_it = np.zeros(self.nrings,), np.zeros(self.nrings,), np.zeros(self.nrings,)
@@ -107,7 +109,8 @@ class Circular_model:
 			guess = [vrot_tab,vrot_tab*0,vrot_tab*0,self.pa0,self.eps0,self.x0,self.y0,self.vsys0,self.theta_b]
 			if it == 0: first_guess_it = guess
 			# Minimization
-			fitting = fit(self.vel, self.evel, guess, self.vary, self.vmode, self.config, R_pos, self.ring_space, self.fitmethod, self.e_ISM, self.pixel_scale, self.frac_pixel, self.inner_interp,N_it=self.n_it0)
+			fitting = fit_routine(self.vel, self.evel, guess, self.vary, self.vmode, self.config, R_pos, self.ring_space, self.fitmethod, self.e_ISM, self.pixel_scale, self.frac_pixel, self.inner_interp,N_it=self.n_it0)
+			# outs
 			self.v_2D_mdl, kin_2D_modls, Vk , self.pa0, self.eps0, self.x0, self.y0, self.vsys0, self.theta_b, out_data, Errors, true_rings = fitting.results()
 			xi_sq = out_data[-1]
 			#Unpack velocities 
@@ -145,7 +148,7 @@ class Circular_model:
 
 		self.frac_pixel = 0
 		n_boot = self.n_boot
-		self.n_it = 1
+		self.n_it,self.n_it0 = 1, 1
 		runs = np.arange(0,self.n_boot)
 			
 		if self.parallel: runs = [individual_run]
@@ -156,7 +159,7 @@ class Circular_model:
 			self.chisq_global = -np.inf
 			if (k+1) % 5 == 0 : print("%s/%s bootstraps" %((k+1),n_boot))
 
-			mdl_old = self.best_vlos_2D_model
+			mdl_old = self.best_vlos_2D_model# if k == 0 else self.v_2D_mdl 
 			res = self.vel_copy - mdl_old
 			# Inject a different seed per process !
 			new_vel = resampling(mdl_old,res,self.Rings,self.delta,self.PA,self.EPS,self.XC,self.YC,self.pixel_scale,seed=seed0)
@@ -164,7 +167,7 @@ class Circular_model:
 			# sum two arrays containing nans
 			new_vel_map = np.nansum(np.dstack((new_vel*mdl_zero,~mdl_zero*self.vel_copy)),2) ; new_vel_map[new_vel_map==0]=np.nan
 			self.vel = new_vel_map
-			lsq = self.lsq()
+			lsq = self.lsq(fit_boots)
 			self.bootstrap_contstant_prms[k,:] = np.array ([ self.pa0, self.eps0, self.x0, self.y0, self.vsys0, self.theta_b ] )
 			self.bootstrap_kin[k,:] = self.vrot#np.concatenate([self.vrot,self.vrad])
 			if self.parallel: return([[ self.pa0, self.eps0, self.x0, self.y0, self.vsys0, self.theta_b ], self.vrot])
@@ -185,7 +188,6 @@ class Circular_model:
 		std_kin = np.nanstd(self.bootstrap_kin,axis=0)
 		self.eVrot = std_kin[:self.n_circ]	
 		self.std_errors = [[self.eVrot, 0,0],np.nanstd(self.bootstrap_contstant_prms,axis=0)]
-
 
 	def mcmc(self):
 
@@ -243,7 +245,11 @@ class Circular_model:
 				mean_kin = np.nanmean(self.bootstrap_kin,axis=0)
 				self.PA,self.EPS,self.XC,self.YC,self.VSYS,self.THETA = np.nanmean(self.bootstrap_contstant_prms,axis=0)
 				self.Vrot = mean_kin[:self.n_circ]
- 
+		 		# create 2D vlos model
+				create_2D = best_2d_model(self.vmode, (self.vel).shape, [self.Vrot,0,0], self.PA, self.EPS, self.XC,
+				self.YC, self.VSYS, self.Rings, self.ring_space, self.pixel_scale, self.inner_interp , 0, 0)
+				self.best_vlos_2D_model = create_2D.model2D()
+
 		#emcee
 		if self.mcmc_ana: 
 			emcmc = self.mcmc()

@@ -23,8 +23,8 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 	shape = vel_map.shape
 	config_mcmc, step_size = mcmc_params
 
-	theta_ = np.hstack(theta0.flatten())
-	sigmas = np.hstack(step_size)
+	theta0_flat = np.hstack(theta0.flatten())
+	sigmas = np.hstack(step_size);
 
 	Nsteps = config_mcmc.getint('Nsteps', 1000)
 	thin = config_mcmc.getint('thin', 1)
@@ -46,7 +46,7 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 	dlogz_init = config_mcmc.getfloat('dlogz_init', 0.1)
 	maxiter  = config_mcmc.getint('maxiter',25e3)
 	maxbatch = config_mcmc.getint('maxbatch',5)
-	nlive = config_mcmc.getint('nlive',10*len(theta_))
+	nlive = config_mcmc.getint('nlive',10*len(theta0_flat))
 	sample = config_mcmc.get('sample','auto')
 	priors_dynesty = config_mcmc.getboolean('priors',1)
 	bound = config_mcmc.get('bound',"single")
@@ -65,7 +65,7 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 
 	if PropDist == "G":
 		if not int_scatter :
-			theta_, sigmas = theta_[:-1],sigmas[:-1]
+			theta0_flat, sigmas = theta0_flat[:-1],sigmas[:-1]
 			#theta0 = theta0[:-1]
 
 	if vmode == "bisymmetric":
@@ -73,27 +73,40 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 		if PropDist == "C" or int_scatter: bound_pabar = -2 
 		periodic = [bound_pabar] if not priors_dynesty else periodic
 
-	kinmodel = KinModel( vel_map, evel_map, theta_, vmode, rings_pos, ring_space, pixel_scale, inner_interp, PropDist, m_hrm, n_circ, n_noncirc, shape, config_psf)
+	kinmodel = KinModel( vel_map, evel_map, theta0_flat, vmode, rings_pos, ring_space, pixel_scale, inner_interp, PropDist, m_hrm, n_circ, n_noncirc, shape, config_psf)
 	#log_posterior = set_likelihood(vmode, shape, PropDist, n_circ, n_noncirc, kinmodel)
-	set_L = set_likelihood(vmode, shape, PropDist, n_circ, n_noncirc, kinmodel,theta_,int_scatter, pixel_scale, m_hrm, priors_dynesty, mcmc_sampler)
+	set_L = set_likelihood(vmode, shape, PropDist, n_circ, n_noncirc, kinmodel,theta0_flat,int_scatter, pixel_scale, m_hrm, priors_dynesty, mcmc_sampler)
 	log_likelihood = set_L.ln_likelihood
 	prior_transform = set_L.prior_transform
 	log_posterior = set_L.ln_posterior
+	log_prior = set_L.ln_prior
 
-	ndim =  len(theta_)
+	ndim =  len(theta0_flat)
 	if Nwalkers == None:
 		Nwalkers = int(2*ndim)
 	# covariance of proposal distribution.
-	cov = sigmas*np.eye(len(theta_))
-	#cov = np.eye(len(theta_))
+	cov = sigmas*np.eye(len(theta0_flat))
 	pos = np.empty((Nwalkers, ndim))
 
 	seed0 = int(time.time())
 	pnrg = np.random.RandomState(seed0)
 	for k in range(Nwalkers):
-		theta_prop = pnrg.multivariate_normal(theta_, cov)
-		#theta_prop = pnrg.normal(theta_, 0.001)
+		theta_prop = pnrg.multivariate_normal(theta0_flat, cov)
 		pos[k] =  theta_prop
+
+	#check initial condition of priors
+	priors_eval = [log_prior(pos[k]) for k in range(Nwalkers)]
+	check_priors = [np.isfinite(k) for k in priors_eval]
+	priors_finite = all(check_priors)
+	scale,k = 0.1,1
+	while not priors_finite:
+		print("redefining priors attempt #%s "%k);k+=1;
+		pos = pnrg.normal(theta0_flat, scale, size = (Nwalkers, ndim))
+		priors_eval = [np.isfinite(log_prior(pos[k])) for k in range(Nwalkers)]
+		priors_finite = all(priors_eval)
+		if scale < 1e-7:
+			priors_finite = True
+		scale = scale*0.1
 
 	#"""
 
@@ -125,7 +138,7 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 				sampler = zeus.EnsembleSampler(Nwalkers, ndim, log_posterior, light_mode=True, pool = pool )
 			if mcmc_sampler == "dynesty":
 				priors = "Truncated-gaussians" if priors_dynesty else "Uniform"
-				print("Dynesty parameters")
+				#print("Dynesty parameters")
 				print(" bound:\t\t %s \n sample:\t %s \n dlogz_init:\t %s \n maxiter:\t %s \n maxbatch:\t %s \n nlive:\t\t %s \n priors:\t %s"\
 				%(bound,sample,dlogz_init,maxiter,maxbatch,nlive,priors))
 				print("############################")
@@ -151,7 +164,7 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 			nwalkers, steps, ndim = nwalkers, 1, nparams
 			chain = np.zeros((nwalkers, steps,ndim))
 			chain[:,0,:] = chain0
-			dplots(res, theta_, vmode, galaxy, PropDist, int_scatter, n_circ, n_noncirc)
+			dplots(res, theta0_flat, vmode, galaxy, PropDist, int_scatter, n_circ, n_noncirc)
 
 
 		if mcmc_sampler == "emcee":

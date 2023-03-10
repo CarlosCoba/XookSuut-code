@@ -243,8 +243,8 @@ class set_likelihood:
 			# Uniform priors on parameters
 			# note 1: for emcee and zeus: phi_bar goes from (-1,1) so that its arccos value goes from (0,2*np.pi)
 			# note 2: vsys is searched around +-300 km/s from guess value.
-			if all([-1 <= np.cos(pa*np.pi/180) <= 1, eps_min < eps < eps_max, r < rsearch, \
-			-1  < phi_b < 1, mask_product, self.vsys*(1-300/self.vsys) < vsys < self.vsys*(1+300/self.vsys) ]):
+			if all([-2*np.pi <= pa*np.pi/180 <= 2*np.pi, eps_min < eps < eps_max, r < rsearch, \
+			-1 < phi_b < 1, mask_product, self.vsys*(1-300/self.vsys) < vsys < self.vsys*(1+300/self.vsys) ]):
 			# Gaussian priors ?
 				lp = 0 + lp
 				lp += self.g_priors(self.x0,x0,5)
@@ -252,6 +252,12 @@ class set_likelihood:
 				lp += self.g_priors(self.eps,eps,1e-2)
 				lp += self.g_priors(self.pa,pa,10)
 				lp += self.g_priors(self.vsys,vsys,50)
+
+				# angles close the minor/major axis are not excluded, but less likely.				
+				# 85deg,5deg
+				d85,d5 = np.cos(85*np.pi/180),np.cos(5*np.pi/180)
+				if not (abs(phi_b) > d85) & (abs(phi_b) < d5):
+					lp = -1e6
 
 			else:
 				lp = -1*np.inf
