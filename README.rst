@@ -110,7 +110,7 @@ Harmonic expasion with harmonic number m  = 2
 Referencing XookSuut
 =================
  
-If you are using XS in your work, please cite the XS release paper ().
+If you are using XS in your work, please cite the XS release paper https://arxiv.org/abs/2110.05095.
 In addition to that, XS is influenced by the DiskFit (Spekkens & Sellwood 2007) and RESWRI (Schoenmakers et al. 1997) packages 
 since it includes kinematic models from these two codes, so don't forget to mention them in your work.
 XS also relies on the following MCMC packages, emcee from (Foreman-Mackey+2013) and Zeus (Karamanis+2021,2022); and Dynesty (Speagle 2020, Koposov +2022) for nested sampling.
