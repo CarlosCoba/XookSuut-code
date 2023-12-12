@@ -199,14 +199,14 @@ class Circular_model:
 
 		print("starting MCMC analysis ..")
 
-		theta0 = np.hstack([self.Vrot, self.PA, self.EPS, self.XC, self.YC, self.VSYS])
+		theta0 = [self.Vrot, self.PA, self.EPS, self.XC, self.YC, self.VSYS]
 		n_circ, n_noncirc = len(self.Vrot),0
 		#Covariance of the proposal distribution		
-		sigmas = np.hstack([np.ones(n_circ)*1,1,1e-3,1,1,1])*1e-2
+		sigmas = [np.ones(n_circ)*1e-2,1e-2,1e-5,1e-2,1e-2,1e-2]
 
 		# For the intrinsic scatter
-		theta0 = np.append(theta0, 1)
-		sigmas = np.append(sigmas, 0.001)
+		theta0.append(1)
+		sigmas.append(0.001)
 
 		r_bar_min, r_bar_max = 0, 0
 		data = [self.galaxy, self.vel, self.evel, theta0]
