@@ -23,7 +23,7 @@ def Metropolis(KinModel, data, model_params, mcmc_params, config_psf, inner_inte
 	shape = vel_map.shape
 	config_mcmc, step_size = mcmc_params
 
-	theta0_flat = np.hstack(theta0.flatten())
+	theta0_flat = np.hstack(theta0)
 	sigmas = np.hstack(step_size);
 
 	Nsteps = config_mcmc.getint('Nsteps', 1000)

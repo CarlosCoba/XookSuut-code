@@ -1,12 +1,12 @@
-astropy>=4.0.1
-matplotlib>=3.2.1
-numpy>=1.18.3
-scipy>=1.4.1
-lmfit>=1.0.0
+astropy>=5.2.2
+matplotlib>=3.7.4
+numpy>=1.24.4
+scipy>=1.10.1
+lmfit>=1.2.2
 corner>=2.1.0
 tqdm>=4.62.3
 emcee>=3.1.1
 numdifftools>=0.9.39
 zeus-mcmc>=2.4.1
-dynesty>=2.0.3
+dynesty>=2.1.3
 

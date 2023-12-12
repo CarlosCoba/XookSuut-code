@@ -131,7 +131,7 @@ class set_likelihood:
 		y0 = tn(y0_u, self.y0, 2./self.pixel_scale, yc_min, yc_max) #if self.priorvol else up(y0_u, yc_min, yc_max)
 
 		#priors for eps
-		eps_min,eps_max = 1-np.cos(25*np.pi/180), 1-np.cos(80*np.pi/180)
+		eps_min,eps_max = 1-np.cos(15*np.pi/180), 1-np.cos(80*np.pi/180)
 		eps = tn(eps_u, self.eps, 0.05, eps_min,eps_max) #if self.priorvol else up(eps_u, eps_min,eps_max)
 
 		#priors for vsys
@@ -310,7 +310,9 @@ class set_likelihood:
 
 			if self.pdf == "C":
 				# Cauchy
-				log_L = -(N + 1) * np.log(beta) - np.sum(np.log(1.0 + ( dy / beta )**2) )
+				#log_L = -(N + 1) * np.log(beta) - np.sum(np.log(1.0 + ( dy / beta )**2) )
+				log_L = -N * np.log(np.pi*beta) - np.sum(np.log(1.0 + ( dy / beta )**2) )
+
 			if log_L ==0:log_L = -np.inf
 			return log_L
 

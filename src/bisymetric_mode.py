@@ -39,7 +39,13 @@ class Bisymmetric_model:
 		self.fitmethod=fitmethod
 		if self.n_it == 0: self.n_it =1
 
-		self.rings = np.arange(self.rstart, self.rfinal, self.ring_space)
+		rend = self.rfinal
+		if (self.rfinal-self.rstart) % self.ring_space == 0 :
+			# To include the last ring :
+			rend = self.rfinal + self.ring_space
+
+
+		self.rings = np.arange(self.rstart, rend, self.ring_space)
 		self.nrings = len(self.rings)
 
 		self.r_bar_min, self.r_bar_max = self.bar_min_max
@@ -208,14 +214,14 @@ class Bisymmetric_model:
 		mcmc_sampler = (self.config_mcmc).get('mcmc_sampler')
 		# transform phi_b for emcee and zeus analysis
 		phi_b_mcmc = np.cos(self.THETA) if mcmc_sampler in ["emcee","zeus"] else self.THETA 
-		theta0 = np.asarray([self.Vrot, Vrad_nonzero, Vtan_nonzero, self.PA, self.EPS, self.XC, self.YC, self.VSYS, phi_b_mcmc])
+		theta0 = [self.Vrot, Vrad_nonzero, Vtan_nonzero, self.PA, self.EPS, self.XC, self.YC, self.VSYS, phi_b_mcmc]
 		n_circ = len(self.Vrot)
 		#Covariance of the proposal distribution
-		sigmas = np.array([np.ones(n_circ),np.ones(n_noncirc),np.ones(n_noncirc),1,1e-3,1,1,1,1])*1e-2
+		sigmas = [np.ones(n_circ)*1e-2,np.ones(n_noncirc)*1e-2,np.ones(n_noncirc)*1e-2,1e-2,1e-5,1e-2,1e-2,1e-2,1e-2]
 
 		# For the intrinsic scatter
-		theta0 = np.append(theta0, 1)
-		sigmas = np.append(sigmas, 0.001)
+		theta0.append(1)
+		sigmas.append(0.001)
 
 		
 		data = [self.galaxy, self.vel, self.evel, theta0]

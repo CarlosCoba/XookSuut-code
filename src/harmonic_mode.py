@@ -33,7 +33,13 @@ class Harmonic_model:
 		self.fitmethod=fitmethod
 		self.m_hrm = m_hrm
 		if self.n_it == 0: self.n_it = 1
-		self.rings = np.arange(self.rstart, self.rfinal, self.ring_space)
+		rend = self.rfinal
+		if (self.rfinal-self.rstart) % self.ring_space == 0 :
+			# To include the last ring :
+			rend = self.rfinal + self.ring_space
+
+
+		self.rings = np.arange(self.rstart, rend, self.ring_space)
 		self.nrings = len(self.rings)
 
 		self.r_bar_min, self.r_bar_max = self.bar_min_max
@@ -212,15 +218,17 @@ class Harmonic_model:
 
 		#priors:
 		theta_list = [np.hstack(C), np.hstack(S), self.PA, self.EPS, self.XC, self.YC, self.VSYS ]
-		theta0 = np.hstack(theta_list)
+		theta_stack = np.hstack(theta_list)
+		theta0 = theta_list
 
 		#Covariance of the proposal distribution
-		sigmas = np.divide( theta0,theta0)*1e-2
-		sigmas[-5] = sigmas[-4]*1e-3 # this is eps	
+		sigmas = np.divide( theta_stack,theta_stack)*1e-2
+		sigmas[-5] = sigmas[-4]*1e-3 # this is eps
+		sigmas = list(sigmas)
 
 		# For the intrinsic scatter
-		theta0 = np.append(theta0, 1)
-		sigmas = np.append(sigmas, 0.001)
+		theta0.append(1)
+		sigmas.append(0.001)
 								
 				
 		data = [self.galaxy, self.vel, self.evel, theta0]

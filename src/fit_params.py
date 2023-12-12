@@ -9,7 +9,6 @@ import configparser
 import random
 
 
- 
 def Rings(xy_mesh,pa,eps,x0,y0,pixel_scale):
 	(x,y) = xy_mesh
 
@@ -113,9 +112,12 @@ class Least_square_fit:
 
 		config_const = config['constant_params']
 		self.Vmin, self.Vmax = -450, 450
-		eps_min, eps_max = 1-np.cos(25*np.pi/180),1-np.cos(80*np.pi/180)
+		eps_min, eps_max = 1-np.cos(20*np.pi/180),1-np.cos(80*np.pi/180)
 		self.PAmin,self.PAmax,self.vary_pa = config_const.getfloat('MIN_PA', 0), config_const.getfloat('MAX_PA', 360),config_const.getboolean('FIT_PA', self.vary_pa)
 		self.INCmin,self.INCmax,self.vary_eps = config_const.getfloat('MIN_INC', eps_min), config_const.getfloat('MAX_INC', eps_max),config_const.getboolean('FIT_INC', self.vary_eps)
+		# To change input INCmin (in deg) and INCmax (in deg) values from the config file to eps 
+		if self.INCmin >1:  self.INCmin = 1-np.cos(self.INCmin*np.pi/180)
+		if self.INCmax >1:  self.INCmax = 1-np.cos(self.INCmax*np.pi/180)
 		self.X0min,self.X0max,self.vary_xc = config_const.getfloat('MIN_X0', 0), config_const.getfloat('MAX_X0', self.nx),config_const.getboolean('FIT_X0', self.vary_xc)
 		self.Y0min,self.Y0max,self.vary_yc = config_const.getfloat('MIN_Y0', 0), config_const.getfloat('MAX_Y0', self.ny),config_const.getboolean('FIT_Y0', self.vary_yc)
 		self.VSYSmin,self.VSYSmax,self.vary_vsys = config_const.getfloat('MIN_VSYS', 0), config_const.getfloat('MAX_VSYS', np.inf),config_const.getboolean('FIT_VSYS', self.vary_vsys)

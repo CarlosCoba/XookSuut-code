@@ -39,7 +39,13 @@ class Circular_model:
 		if self.n_it == 0: self.n_it =1
 
 
-		self.rings = np.arange(self.rstart, self.rfinal, self.ring_space)
+		rend = self.rfinal
+		if (self.rfinal-self.rstart) % self.ring_space == 0 :
+			# To include the last ring :
+			rend = self.rfinal + self.ring_space
+
+
+		self.rings = np.arange(self.rstart, rend, self.ring_space)
 		self.nrings = len(self.rings)
 
 		self.pa0,self.eps0,self.x0,self.y0,self.vsys0,self.theta_b = self.guess0
@@ -193,10 +199,10 @@ class Circular_model:
 
 		print("starting MCMC analysis ..")
 
-		theta0 = np.asarray([self.Vrot, self.PA, self.EPS, self.XC, self.YC, self.VSYS])
+		theta0 = np.hstack([self.Vrot, self.PA, self.EPS, self.XC, self.YC, self.VSYS])
 		n_circ, n_noncirc = len(self.Vrot),0
 		#Covariance of the proposal distribution		
-		sigmas = np.array([np.ones(n_circ)*1,1,1e-3,1,1,1])*1e-2
+		sigmas = np.hstack([np.ones(n_circ)*1,1,1e-3,1,1,1])*1e-2
 
 		# For the intrinsic scatter
 		theta0 = np.append(theta0, 1)

@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pylab as plt
 from astropy.io import fits
-np.warnings.filterwarnings('ignore')
+import warnings
+warnings.filterwarnings('ignore')
 import os.path
 from os import path
 
@@ -157,7 +158,7 @@ class Run_models:
 			self.PA,self.EPS,self.XC,self.YC,self.VSYS,self.R,self.Ck,self.Sk,self.vlos_2D_mdl, self.kin_2D_mdls,self.bic_aic,self.errors_fit = hrm()
 
 		self.ekin,self.econst = self.errors_fit
-		self.ePA,self.eEPS,self.eXC,self.eYC,self.eVsys = self.econst[:5]
+		self.ePA,self.eEPS,self.eXC,self.eYC,self.eVSYS = self.econst[:5]
 		if self.vmode == "bisymmetric":
 			self.ePHI_BAR_deg = self.econst[5]*180/np.pi
 		self.INC,self.eINC = eps_2_inc(self.EPS)*180/np.pi,eps_2_inc(self.eEPS)*180/np.pi

@@ -35,7 +35,7 @@ def chain_res_mcmc(galaxy, vmode, theta, mcmc_outs, shape, rings_pos, ring_space
 	# These are the number of parameters from the kinematic models
 	n_params_mdl = n_circ + 2*n_noncirc + 6
 	labels_const = ["$\mathrm{\phi^{\prime}}~(^\circ)$", "$i~(^\circ)$", "$\mathrm{x_0}~(pix)$", "$\mathrm{y_0}~(pix)$", "$\mathrm{V_{sys}~(km/s)}$","$\\phi_{\mathrm{bar}}~(^\circ)$"]
-	theta_flat = np.hstack(theta.flatten())
+	theta_flat = np.hstack(theta)
 	pa0,eps0,x0,y0,vsys0,phi0 = theta_flat[m:m+6]
 	inc0,phi0 = eps_2_inc(eps0)*180/np.pi,phi0*180/np.pi
 	truths_const = [pa0, inc0, x0, y0, vsys0,phi0]

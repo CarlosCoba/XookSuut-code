@@ -37,7 +37,7 @@ def chain_res_mcmc(galaxy, vmode, theta, mcmc_outs, shape, rings_pos, ring_space
 
 	# Labels of constant parameters
 	labels_const = ["$\mathrm{\phi^{\prime}}~(^\circ)$", "$i~(^\circ)$", "$\mathrm{x_0}~(pix)$", "$\mathrm{y_0}~(pix)$", "$\mathrm{c_0~(km/s)}$"]
-	theta_flat = np.hstack(theta.flatten())
+	theta_flat = np.hstack(theta)
 	pa0,eps0,x0,y0,vsys0 = theta_flat[m:m+5]
 	inc0 = eps_2_inc(eps0)*180/np.pi
 	truths_const = [pa0, inc0, x0, y0, vsys0]
