@@ -2,7 +2,8 @@ import numpy as np
 from scipy.interpolate import interp1d
 import matplotlib.pylab as plt
 from src.pixel_params import eps_2_inc
-np.warnings.filterwarnings('ignore')
+import warnings
+warnings.filterwarnings('ignore')
 
 
 def model(vmode,nx,ny,pa,eps,Vsys,x0,y0,R,V,phi_b=0,pixel_scale=1):
